@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  generate-matrix:
+    name: Generate matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract tested GHC versions
+        id: set-matrix
+        uses: Kleidukos/get-tested@v0.1.9.1
+        with:
+          cabal-file: consy.cabal
+          ubuntu-version: latest
+          version: 0.1.9.1
+
+  tests:
+    name: GHC ${{ matrix.ghc }} on ${{ matrix.os }}
+    needs: generate-matrix
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Haskell
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: ${{ matrix.ghc }}
+          cabal-version: latest
+
+      - name: Update package index
+        run: cabal update
+
+      - name: Build all components
+        run: cabal build all --enable-tests --enable-benchmarks
+
+      - name: Test
+        run: cabal test --enable-tests consy-tests
