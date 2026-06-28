@@ -1,7 +1,7 @@
 {-# language BangPatterns #-}
 {-# language NoImplicitPrelude #-}
 {-# language TemplateHaskell #-}
-{-# options_ghc -O -fplugin Test.Inspection.Plugin #-}
+{-# options_ghc -O -fplugin Test.Tasty.Inspection.Plugin #-}
 module InspectionTests.SearchingWithPredicate where
 
 import Control.Applicative (ZipList(..))
@@ -23,7 +23,8 @@ import GHC.Enum (succ)
 import GHC.List (errorEmptyList)
 import GHC.Num (Num, Integer, (+), (-))
 import GHC.Real (fromIntegral)
-import Test.Inspection
+import Test.Tasty (TestTree, testGroup)
+import Test.Tasty.Inspection
 
 import qualified Data.ByteString
 import qualified Data.ByteString.Char8
@@ -51,42 +52,34 @@ listFind p = go
     go (x : xs)
       | p x = Just x
       | otherwise = go xs
-inspect ('consFind === 'listFind)
 
 consFindText, textFind :: (Char -> Bool) -> Text -> Maybe Char
 consFindText = find
 textFind = Data.Text.find
-inspect ('consFindText === 'textFind)
 
 consFindText', textFind' :: Text -> Maybe Char
 consFindText' = find (== 'a')
 textFind' = Data.Text.find (== 'a')
-inspect ('consFindText' === 'textFind')
 
 consFindText'', textFind'' :: Maybe Char
 consFindText'' = find (== 'a') (pack "bbbb")
 textFind'' = Data.Text.find (== 'a') (pack "bbbb")
-inspect ('consFindText'' === 'textFind'')
 
 consFindLazyText, lazyTextFind :: (Char -> Bool) -> Data.Text.Lazy.Text -> Maybe Char
 consFindLazyText = find
 lazyTextFind = Data.Text.Lazy.find
-inspect ('consFindLazyText === 'lazyTextFind)
 
 consFindVector, vectorFind :: (a -> Bool) -> Vector a -> Maybe a
 consFindVector = find
 vectorFind = Data.Vector.find
-inspect ('consFindVector === 'vectorFind)
 
 consFindBS, bsFind :: (Word8 -> Bool) -> Data.ByteString.ByteString -> Maybe Word8
 consFindBS = find
 bsFind = Data.ByteString.find
-inspect ('consFindBS === 'bsFind)
 
 consFindLBS, lbsFind :: (Word8 -> Bool)-> Data.ByteString.Lazy.ByteString -> Maybe Word8
 consFindLBS = find
 lbsFind = Data.ByteString.Lazy.find
-inspect ('consFindLBS === 'lbsFind)
 
 
 {- filter -}
@@ -97,37 +90,30 @@ listFilter p = go
     go [] = []
     go (x : xs)
       | p x = x : go xs | otherwise = go xs
-inspect ('consFilter === 'listFilter)
 
 consFilterText, textFilter :: (Char -> Bool) -> Text -> Text
 consFilterText = filter
 textFilter = Data.Text.filter
-inspect ('consFilterText === 'textFilter)
 
 consFilterText', textFilter' :: Text -> Text
 consFilterText' = filter (== 'a')
 textFilter' = Data.Text.filter (== 'a')
-inspect ('consFilterText' === 'textFilter')
 
 consFilterText'', textFilter'' :: Text
 consFilterText'' = filter (== 'a') (pack "bbbb")
 textFilter'' = Data.Text.filter (== 'a') (pack "bbbb")
-inspect ('consFilterText'' === 'textFilter'')
 
 consFilterMapText, textFilterMap :: Text -> Text
 consFilterMapText = map succ . filter (== 'a')
 textFilterMap = Data.Text.map succ . Data.Text.filter (== 'a')
-inspect ('consFilterMapText === 'textFilterMap)
 
 consMapFilter, listMapFilter :: Num a => (a -> Bool) -> [a] -> [a]
 consMapFilter p = filter p . map (+1)
 listMapFilter p = Data.List.filter p . Data.List.map (+1)
-inspect ('consMapFilter === 'listMapFilter)
 
 consFilterSeq, seqFilter :: (a -> Bool) -> Seq a -> Seq a
 consFilterSeq = filter
 seqFilter = Data.Sequence.filter
-inspect ('consFilterSeq === 'seqFilter)
 
 
 {- partititon -}
@@ -148,29 +134,49 @@ inspect ('consPartitionList === 'listPartition)
 consPartitionText, textPartition :: (Char -> Bool) -> Text -> (Text, Text)
 consPartitionText = partition
 textPartition = Data.Text.partition
-inspect ('consPartitionText === 'textPartition)
 
 consPartitionLazyText, lazyTextPartition :: (Char -> Bool) -> Data.Text.Lazy.Text -> (Data.Text.Lazy.Text, Data.Text.Lazy.Text)
 consPartitionLazyText = partition
 lazyTextPartition = Data.Text.Lazy.partition
-inspect ('consPartitionLazyText === 'lazyTextPartition)
 
 consPartitionVector, vectorPartition :: (a -> Bool) -> Vector a -> (Vector a, Vector a)
 consPartitionVector = partition
 vectorPartition = Data.Vector.partition
-inspect ('consPartitionVector === 'vectorPartition)
 
 consPartitionBS, bsPartition :: (Word8 -> Bool) -> Data.ByteString.ByteString -> (Data.ByteString.ByteString, Data.ByteString.ByteString)
 consPartitionBS = partition
 bsPartition = Data.ByteString.partition
-inspect ('consPartitionBS === 'bsPartition)
 
 consPartitionLBS, lbsPartition :: (Word8 -> Bool) -> Data.ByteString.Lazy.ByteString -> (Data.ByteString.Lazy.ByteString, Data.ByteString.Lazy.ByteString)
 consPartitionLBS = partition
 lbsPartition = Data.ByteString.Lazy.partition
-inspect ('consPartitionLBS === 'lbsPartition)
 
 consPartitionSeq, seqPartition :: (a -> Bool) -> Seq a -> (Seq a, Seq a)
 consPartitionSeq = partition
 seqPartition = Data.Sequence.partition
-inspect ('consPartitionSeq === 'seqPartition)
+
+searchingWithPredicateInspectionTests :: TestTree
+searchingWithPredicateInspectionTests =
+  testGroup "Searching With Predicate"
+    [ $(inspectTest ('consFind === 'listFind))
+    , $(inspectTest ('consFindText === 'textFind))
+    , $(inspectTest ('consFindText' === 'textFind'))
+    , $(inspectTest ('consFindText'' === 'textFind''))
+    , $(inspectTest ('consFindLazyText === 'lazyTextFind))
+    , $(inspectTest ('consFindVector === 'vectorFind))
+    , $(inspectTest ('consFindBS === 'bsFind))
+    , $(inspectTest ('consFindLBS === 'lbsFind))
+    , $(inspectTest ('consFilter === 'listFilter))
+    , $(inspectTest ('consFilterText === 'textFilter))
+    , $(inspectTest ('consFilterText' === 'textFilter'))
+    , $(inspectTest ('consFilterText'' === 'textFilter''))
+    , $(inspectTest ('consFilterMapText === 'textFilterMap))
+    , $(inspectTest ('consMapFilter === 'listMapFilter))
+    , $(inspectTest ('consFilterSeq === 'seqFilter))
+    , $(inspectTest ('consPartitionText === 'textPartition))
+    , $(inspectTest ('consPartitionLazyText === 'lazyTextPartition))
+    , $(inspectTest ('consPartitionVector === 'vectorPartition))
+    , $(inspectTest ('consPartitionBS === 'bsPartition))
+    , $(inspectTest ('consPartitionLBS === 'lbsPartition))
+    , $(inspectTest ('consPartitionSeq === 'seqPartition))
+    ]

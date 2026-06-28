@@ -1,10 +1,11 @@
 {-# language BangPatterns #-}
 {-# language NoImplicitPrelude #-}
 {-# language TemplateHaskell #-}
-{-# options_ghc -O -fplugin Test.Inspection.Plugin #-}
+{-# options_ghc -O -fplugin Test.Tasty.Inspection.Plugin #-}
 module InspectionTests.AccumulatingMaps where
 
-import Test.Inspection ((===), inspect)
+import Test.Tasty (TestTree, testGroup)
+import Test.Tasty.Inspection
 
 import Data.Char (Char)
 
@@ -20,7 +21,6 @@ import Consy
 consMapAccumLList, mapAccumLList :: (a -> b -> (a, c)) -> a -> [b] -> (a, [c])
 consMapAccumLList = mapAccumL
 mapAccumLList = Data.List.mapAccumL
-inspect ('consMapAccumLList === 'mapAccumLList)
 
 consMapAccumLText, mapAccumLText
   :: (a -> Char -> (a, Char))
@@ -29,7 +29,6 @@ consMapAccumLText, mapAccumLText
   -> (a, Data.Text.Text)
 consMapAccumLText = mapAccumL
 mapAccumLText = Data.Text.mapAccumL
-inspect ('consMapAccumLText === 'mapAccumLText)
 
 consMapAccumLLazyText, mapAccumLLazyText
   :: (a -> Char -> (a, Char))
@@ -38,7 +37,6 @@ consMapAccumLLazyText, mapAccumLLazyText
   -> (a, Data.Text.Lazy.Text)
 consMapAccumLLazyText = mapAccumL
 mapAccumLLazyText = Data.Text.Lazy.mapAccumL
-inspect ('consMapAccumLLazyText === 'mapAccumLLazyText)
 
 consMapAccumLVector, mapAccumLVector
   :: (a -> b -> (a, c))
@@ -47,14 +45,12 @@ consMapAccumLVector, mapAccumLVector
   -> (a, Data.Vector.Vector c)
 consMapAccumLVector = mapAccumL
 mapAccumLVector = Data.List.mapAccumL
-inspect ('consMapAccumLVector === 'mapAccumLVector)
 
 
 {- mapAccumR -}
 consMapAccumRList, mapAccumRList :: (a -> b -> (a, c)) -> a -> [b] -> (a, [c])
 consMapAccumRList = mapAccumR
 mapAccumRList = Data.List.mapAccumR
-inspect ('consMapAccumRList === 'mapAccumRList)
 
 consMapAccumRText, mapAccumRText
   :: (a -> Char -> (a, Char))
@@ -63,7 +59,6 @@ consMapAccumRText, mapAccumRText
   -> (a, Data.Text.Text)
 consMapAccumRText = mapAccumR
 mapAccumRText = Data.Text.mapAccumR
-inspect ('consMapAccumRText === 'mapAccumRText)
 
 consMapAccumRLazyText, mapAccumRLazyText
   :: (a -> Char -> (a, Char))
@@ -72,7 +67,6 @@ consMapAccumRLazyText, mapAccumRLazyText
   -> (a, Data.Text.Lazy.Text)
 consMapAccumRLazyText = mapAccumR
 mapAccumRLazyText = Data.Text.Lazy.mapAccumR
-inspect ('consMapAccumRLazyText === 'mapAccumRLazyText)
 
 consMapAccumRVector, mapAccumRVector
   :: (a -> b -> (a, c))
@@ -81,4 +75,16 @@ consMapAccumRVector, mapAccumRVector
   -> (a, Data.Vector.Vector c)
 consMapAccumRVector = mapAccumR
 mapAccumRVector = Data.List.mapAccumR
-inspect ('consMapAccumRVector === 'mapAccumRVector)
+
+accumulatingMapsInspectionTests :: TestTree
+accumulatingMapsInspectionTests =
+  testGroup "Accumulating Maps"
+    [ $(inspectTest ('consMapAccumLList === 'mapAccumLList))
+    , $(inspectTest ('consMapAccumLText === 'mapAccumLText))
+    , $(inspectTest ('consMapAccumLLazyText === 'mapAccumLLazyText))
+    , $(inspectTest ('consMapAccumLVector === 'mapAccumLVector))
+    , $(inspectTest ('consMapAccumRList === 'mapAccumRList))
+    , $(inspectTest ('consMapAccumRText === 'mapAccumRText))
+    , $(inspectTest ('consMapAccumRLazyText === 'mapAccumRLazyText))
+    , $(inspectTest ('consMapAccumRVector === 'mapAccumRVector))
+    ]

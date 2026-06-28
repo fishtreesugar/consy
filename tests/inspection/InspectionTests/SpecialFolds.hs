@@ -1,7 +1,7 @@
 {-# language BangPatterns #-}
 {-# language NoImplicitPrelude #-}
 {-# language TemplateHaskell #-}
-{-# options_ghc -O -fplugin Test.Inspection.Plugin #-}
+{-# options_ghc -O -fplugin Test.Tasty.Inspection.Plugin #-}
 module InspectionTests.SpecialFolds where
 
 import Control.Applicative (ZipList(..))
@@ -23,7 +23,8 @@ import GHC.Enum (succ)
 import GHC.List (errorEmptyList)
 import GHC.Num (Num, (+), (-), (*))
 import GHC.Real (fromIntegral)
-import Test.Inspection
+import Test.Tasty (TestTree, testGroup)
+import Test.Tasty.Inspection
 
 import qualified Data.ByteString
 import qualified Data.ByteString.Char8
@@ -46,88 +47,72 @@ import Consy
 consConcat, listConcat :: [[a]] -> [a]
 consConcat = concat
 listConcat = foldr (append) []
-inspect ('consConcat === 'listConcat)
 
 consConcatText, textConcat :: [Text] -> Text
 consConcatText = concat
 textConcat = Data.Text.concat
-inspect ('consConcatText === 'textConcat)
 
 consConcatLazyText, lazyTextConcat :: [Data.Text.Lazy.Text] -> Data.Text.Lazy.Text
 consConcatLazyText = concat
 lazyTextConcat = Data.Text.Lazy.concat
-inspect ('consConcatLazyText === 'lazyTextConcat)
 
 consConcatVector, vectorConcat :: [Vector a] -> Vector a
 consConcatVector = concat
 vectorConcat = Data.Vector.concat
-inspect ('consConcatVector === 'vectorConcat)
 
 consConcatBS, bsConcat :: [Data.ByteString.ByteString] -> Data.ByteString.ByteString
 consConcatBS = concat
 bsConcat = Data.ByteString.concat
-inspect ('consConcatBS === 'bsConcat)
 
 consConcatLBS, lbsConcat :: [Data.ByteString.Lazy.ByteString] -> Data.ByteString.Lazy.ByteString
 consConcatLBS = concat
 lbsConcat = Data.ByteString.Lazy.concat
-inspect ('consConcatLBS === 'lbsConcat)
 
 
 {- concatMap -}
 consConcatMap, listConcatMap :: (a -> [b]) -> [a] -> [b]
 consConcatMap = concatMap
 listConcatMap f = \as -> foldr ((append) . f) [] as
-inspect ('consConcatMap === 'listConcatMap)
 
 consConcatMapText, textConcatMap :: (Char -> Text) -> Text -> Text
 consConcatMapText = concatMap
 textConcatMap = Data.Text.concatMap
-inspect ('consConcatMapText === 'textConcatMap)
 
 consConcatMapLazyText, lazyTextConcatMap :: (Char -> Data.Text.Lazy.Text) -> Data.Text.Lazy.Text -> Data.Text.Lazy.Text
 consConcatMapLazyText = concatMap
 lazyTextConcatMap = Data.Text.Lazy.concatMap
-inspect ('consConcatMapLazyText === 'lazyTextConcatMap)
 
 consConcatMapVector, vectorConcatMap :: (a -> Vector b) -> Vector a -> Vector b
 consConcatMapVector = concatMap
 vectorConcatMap = Data.Vector.concatMap
-inspect ('consConcatMapVector === 'vectorConcatMap)
 
 consConcatMapBS, bsConcatMap :: (Word8 -> Data.ByteString.ByteString) -> Data.ByteString.ByteString -> Data.ByteString.ByteString
 consConcatMapBS = concatMap
 bsConcatMap = Data.ByteString.concatMap
-inspect ('consConcatMapBS === 'bsConcatMap)
 
 consConcatMapLBS, lbsConcatMap :: (Word8 -> Data.ByteString.Lazy.ByteString) -> Data.ByteString.Lazy.ByteString -> Data.ByteString.Lazy.ByteString
 consConcatMapLBS = concatMap
 lbsConcatMap = Data.ByteString.Lazy.concatMap
-inspect ('consConcatMapLBS === 'lbsConcatMap)
 
 
 {- and -}
 consAnd, listAnd :: [Bool] -> Bool
 consAnd = and
 listAnd = foldr (&&) True
-inspect ('consAnd === 'listAnd)
 
 consAndVector, vectorAnd :: Vector Bool -> Bool
 consAndVector = and
 vectorAnd = Data.Vector.and
-inspect ('consAndVector === 'vectorAnd)
 
 
 {- or -}
 consOr, listOr :: [Bool] -> Bool
 consOr = or
 listOr = foldr (||) False
-inspect ('consOr === 'listOr)
 
 consOrVector, vectorOr :: Vector Bool -> Bool
 consOrVector = or
 vectorOr = Data.Vector.or
-inspect ('consOrVector === 'vectorOr)
 
 
 {- any -}
@@ -139,32 +124,26 @@ listAny p = go
       case s of
         [] -> False
         x:xs -> p x || go xs
-inspect ('consAny ==- 'listAny)
 
 consAnyText, textAny :: (Char -> Bool) -> Text -> Bool
 consAnyText = any
 textAny = Data.Text.any
-inspect ('consAnyText === 'textAny)
 
 consAnyLazyText, lazyTextAny :: (Char -> Bool) -> Data.Text.Lazy.Text -> Bool
 consAnyLazyText = any
 lazyTextAny = Data.Text.Lazy.any
-inspect ('consAnyLazyText === 'lazyTextAny)
 
 consAnyVector, vectorAny :: (a -> Bool) -> Vector a -> Bool
 consAnyVector = any
 vectorAny = Data.Vector.any
-inspect ('consAnyVector === 'vectorAny)
 
 consAnyBS, bsAny :: (Word8 -> Bool) -> Data.ByteString.ByteString -> Bool
 consAnyBS = any
 bsAny = Data.ByteString.any
-inspect ('consAnyBS === 'bsAny)
 
 consAnyLBS, lbsAny :: (Word8 -> Bool) -> Data.ByteString.Lazy.ByteString -> Bool
 consAnyLBS = any
 lbsAny = Data.ByteString.Lazy.any
-inspect ('consAnyLBS === 'lbsAny)
 
 
 {- all -}
@@ -176,66 +155,54 @@ listAll p = go
     case s of
       [] -> True
       (x:xs) -> p x && go xs
-inspect ('consAll === 'listAll)
 
 consAllText, textAll :: (Char -> Bool) -> Text -> Bool
 consAllText = all
 textAll = Data.Text.all
-inspect ('consAllText === 'textAll)
 
 consAllLazyText, lazyTextAll :: (Char -> Bool) -> Data.Text.Lazy.Text -> Bool
 consAllLazyText = all
 lazyTextAll = Data.Text.Lazy.all
-inspect ('consAllLazyText === 'lazyTextAll)
 
 consAllVector, vectorAll :: (a -> Bool) -> Vector a -> Bool
 consAllVector = all
 vectorAll = Data.Vector.all
-inspect ('consAllVector === 'vectorAll)
 
 consAllBS, bsAll :: (Word8 -> Bool) -> Data.ByteString.ByteString -> Bool
 consAllBS = all
 bsAll = Data.ByteString.all
-inspect ('consAllBS === 'bsAll)
 
 consAllLBS, lbsAll :: (Word8 -> Bool) -> Data.ByteString.Lazy.ByteString -> Bool
 consAllLBS = all
 lbsAll = Data.ByteString.Lazy.all
-inspect ('consAllLBS === 'lbsAll)
 
 
 {- sum -}
 consSum, listSum :: Num a => [a] -> a
 consSum = sum
 listSum xs = foldl (+) 0 xs
-inspect ('consSum === 'listSum)
 
 consSumVector, vectorSum :: Num a => Vector a -> a
 consSumVector = sum
 vectorSum = Data.Vector.sum
-inspect ('consSumVector === 'vectorSum)
 
 consSumSeq, seqSum :: Num a => Data.Sequence.Seq a -> a
 consSumSeq = sum
 seqSum = Data.Foldable.sum
-inspect ('consSumSeq === 'seqSum)
 
 
 {- product -}
 consProduct, listProduct :: Num a => [a] -> a
 consProduct = product
 listProduct xs = foldl (*) 1 xs
-inspect ('consProduct === 'listProduct)
 
 consProductVector, vectorProduct :: Num a => Vector a -> a
 consProductVector = product
 vectorProduct = Data.Vector.product
-inspect ('consProductVector === 'vectorProduct)
 
 consProductSeq, seqProduct :: Num a => Data.Sequence.Seq a -> a
 consProductSeq = product
 seqProduct = Data.Foldable.product
-inspect ('consProductSeq === 'seqProduct)
 
 
 {- maximum -}
@@ -243,37 +210,30 @@ consMaximum, listMaximum :: (Ord a) => [a] -> a
 consMaximum = maximum
 listMaximum [] = errorEmptyList "maximum"
 listMaximum xs = foldl1 max xs
-inspect ('consMaximum === 'listMaximum)
 
 consMaximumText, textMaximum :: Text -> Char
 consMaximumText = maximum
 textMaximum = Data.Text.maximum
-inspect ('consMaximumText === 'textMaximum)
 
 consMaximumLazyText, lazyTextMaximum :: Data.Text.Lazy.Text -> Char
 consMaximumLazyText = maximum
 lazyTextMaximum = Data.Text.Lazy.maximum
-inspect ('consMaximumLazyText === 'lazyTextMaximum)
 
 consMaximumVector, vectorMaximum :: (Ord a) => Vector a -> a
 consMaximumVector = maximum
 vectorMaximum = Data.Vector.maximum
-inspect ('consMaximumVector === 'vectorMaximum)
 
 consMaximumBS, bsMaximum :: Data.ByteString.ByteString -> Word8
 consMaximumBS = maximum
 bsMaximum = Data.ByteString.maximum
-inspect ('consMaximumBS === 'bsMaximum)
 
 consMaximumLBS, lbsMaximum :: Data.ByteString.Lazy.ByteString -> Word8
 consMaximumLBS = maximum
 lbsMaximum = Data.ByteString.Lazy.maximum
-inspect ('consMaximumLBS === 'lbsMaximum)
 
 consMaximumSeq, seqMaximum :: (Ord a) => Data.Sequence.Seq a -> a
 consMaximumSeq = maximum
 seqMaximum = Data.Foldable.maximum
-inspect ('consMaximumSeq === 'seqMaximum)
 
 
 {- minimum -}
@@ -281,34 +241,80 @@ consMinimum, listMinimum :: (Ord a) => [a] -> a
 consMinimum = minimum
 listMinimum [] = errorEmptyList "minimum"
 listMinimum s = foldl1 min s
-inspect ('consMinimum === 'listMinimum)
 
 consMinimumText, textMinimum :: Text -> Char
 consMinimumText = minimum
 textMinimum = Data.Text.minimum
-inspect ('consMinimumText === 'textMinimum)
 
 consMinimumLazyText, lazyTextMinimum :: Data.Text.Lazy.Text -> Char
 consMinimumLazyText = minimum
 lazyTextMinimum = Data.Text.Lazy.minimum
-inspect ('consMinimumLazyText === 'lazyTextMinimum)
 
 consMinimumVector, vectorMinimum :: (Ord a) => Vector a -> a
 consMinimumVector = minimum
 vectorMinimum = Data.Vector.minimum
-inspect ('consMinimumVector === 'vectorMinimum)
 
 consMinimumBS, bsMinimum :: Data.ByteString.ByteString -> Word8
 consMinimumBS = minimum
 bsMinimum = Data.ByteString.minimum
-inspect ('consMinimumBS === 'bsMinimum)
 
 consMinimumLBS, lbsMinimum :: Data.ByteString.Lazy.ByteString -> Word8
 consMinimumLBS = minimum
 lbsMinimum = Data.ByteString.Lazy.minimum
-inspect ('consMinimumLBS === 'lbsMinimum)
 
 consMinimumSeq, seqMinimum :: (Ord a) => Data.Sequence.Seq a -> a
 consMinimumSeq = minimum
 seqMinimum = Data.Foldable.minimum
-inspect ('consMinimumSeq === 'seqMinimum)
+
+specialFoldsInspectionTests :: TestTree
+specialFoldsInspectionTests =
+  testGroup "Special Folds"
+    [ $(inspectTest ('consConcat === 'listConcat))
+    , $(inspectTest ('consConcatText === 'textConcat))
+    , $(inspectTest ('consConcatLazyText === 'lazyTextConcat))
+    , $(inspectTest ('consConcatVector === 'vectorConcat))
+    , $(inspectTest ('consConcatBS === 'bsConcat))
+    , $(inspectTest ('consConcatLBS === 'lbsConcat))
+    , $(inspectTest ('consConcatMap === 'listConcatMap))
+    , $(inspectTest ('consConcatMapText === 'textConcatMap))
+    , $(inspectTest ('consConcatMapLazyText === 'lazyTextConcatMap))
+    , $(inspectTest ('consConcatMapVector === 'vectorConcatMap))
+    , $(inspectTest ('consConcatMapBS === 'bsConcatMap))
+    , $(inspectTest ('consConcatMapLBS === 'lbsConcatMap))
+    , $(inspectTest ('consAnd === 'listAnd))
+    , $(inspectTest ('consAndVector === 'vectorAnd))
+    , $(inspectTest ('consOr === 'listOr))
+    , $(inspectTest ('consOrVector === 'vectorOr))
+    , $(inspectTest ('consAny ==- 'listAny))
+    , $(inspectTest ('consAnyText === 'textAny))
+    , $(inspectTest ('consAnyLazyText === 'lazyTextAny))
+    , $(inspectTest ('consAnyVector === 'vectorAny))
+    , $(inspectTest ('consAnyBS === 'bsAny))
+    , $(inspectTest ('consAnyLBS === 'lbsAny))
+    , $(inspectTest ('consAll === 'listAll))
+    , $(inspectTest ('consAllText === 'textAll))
+    , $(inspectTest ('consAllLazyText === 'lazyTextAll))
+    , $(inspectTest ('consAllVector === 'vectorAll))
+    , $(inspectTest ('consAllBS === 'bsAll))
+    , $(inspectTest ('consAllLBS === 'lbsAll))
+    , $(inspectTest ('consSum === 'listSum))
+    , $(inspectTest ('consSumVector === 'vectorSum))
+    , $(inspectTest ('consSumSeq === 'seqSum))
+    , $(inspectTest ('consProduct === 'listProduct))
+    , $(inspectTest ('consProductVector === 'vectorProduct))
+    , $(inspectTest ('consProductSeq === 'seqProduct))
+    , $(inspectTest ('consMaximum === 'listMaximum))
+    , $(inspectTest ('consMaximumText === 'textMaximum))
+    , $(inspectTest ('consMaximumLazyText === 'lazyTextMaximum))
+    , $(inspectTest ('consMaximumVector === 'vectorMaximum))
+    , $(inspectTest ('consMaximumBS === 'bsMaximum))
+    , $(inspectTest ('consMaximumLBS === 'lbsMaximum))
+    , $(inspectTest ('consMaximumSeq === 'seqMaximum))
+    , $(inspectTest ('consMinimum === 'listMinimum))
+    , $(inspectTest ('consMinimumText === 'textMinimum))
+    , $(inspectTest ('consMinimumLazyText === 'lazyTextMinimum))
+    , $(inspectTest ('consMinimumVector === 'vectorMinimum))
+    , $(inspectTest ('consMinimumBS === 'bsMinimum))
+    , $(inspectTest ('consMinimumLBS === 'lbsMinimum))
+    , $(inspectTest ('consMinimumSeq === 'seqMinimum))
+    ]

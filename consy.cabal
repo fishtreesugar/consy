@@ -94,7 +94,6 @@ library consy-inspection-tests
   build-depends:
     consy,
     tasty >=1.5 && <1.6,
-    tasty-expected-failure >=0.12 && <0.13,
     tasty-inspection-testing >=0.2.1 && <0.3
 
 test-suite consy-tests

@@ -1,14 +1,15 @@
 {-# language BangPatterns #-}
 {-# language NoImplicitPrelude #-}
 {-# language TemplateHaskell #-}
-{-# options_ghc -O -fplugin Test.Inspection.Plugin #-}
+{-# options_ghc -O -fplugin Test.Tasty.Inspection.Plugin #-}
 module InspectionTests.Scans where
 
 import Control.Applicative (ZipList(..))
 import Data.Char (Char)
 import Data.Coerce (coerce)
 import Data.Word (Word8)
-import Test.Inspection
+import Test.Tasty (TestTree, testGroup)
+import Test.Tasty.Inspection
 
 import qualified Data.ByteString
 import qualified Data.ByteString.Lazy
@@ -45,31 +46,26 @@ consScanlText, textScanl
   :: (Char -> Char -> Char) -> Char -> Data.Text.Text -> Data.Text.Text
 consScanlText = scanl
 textScanl = Data.Text.scanl
-inspect ('consScanlText === 'textScanl)
 
 consScanlTextLazy, textLazyScanl
   :: (Char -> Char -> Char) -> Char -> Data.Text.Lazy.Text -> Data.Text.Lazy.Text
 consScanlTextLazy = scanl
 textLazyScanl = Data.Text.Lazy.scanl
-inspect ('consScanlTextLazy === 'textLazyScanl)
 
 consScanlByteString, byteStringScanl
   :: (Word8 -> Word8 -> Word8) -> Word8 -> Data.ByteString.ByteString -> Data.ByteString.ByteString
 consScanlByteString = scanl
 byteStringScanl = Data.ByteString.scanl
-inspect ('consScanlByteString === 'byteStringScanl)
 
 consScanlByteStringLazy, byteStringLazyScanl
   :: (Word8 -> Word8 -> Word8) -> Word8 -> Data.ByteString.Lazy.ByteString -> Data.ByteString.Lazy.ByteString
 consScanlByteStringLazy = scanl
 byteStringLazyScanl = Data.ByteString.Lazy.scanl
-inspect ('consScanlByteStringLazy === 'byteStringLazyScanl)
 
 consScanlVectorLazy, vectorLazyScanl
   :: (b -> a -> b) -> b -> Data.Vector.Vector a -> Data.Vector.Vector b
 consScanlVectorLazy = scanl
 vectorLazyScanl = Data.Vector.scanl
-inspect ('consScanlVectorLazy === 'vectorLazyScanl)
 
 
 {- scanl' -}
@@ -91,7 +87,6 @@ consScanl'VectorLazy, vectorLazyScanl'
   :: (a -> a -> a) -> a -> Data.Vector.Vector a -> Data.Vector.Vector a
 consScanl'VectorLazy = scanl'
 vectorLazyScanl' = Data.Vector.scanl'
-inspect ('consScanl'VectorLazy === 'vectorLazyScanl')
 
 
 {- scanl1 -}
@@ -99,31 +94,26 @@ consScanl1List, listScanl1 :: (a -> a -> a) -> [a] -> [a]
 consScanl1List = scanl1
 listScanl1 f (x:xs) = scanl f x xs
 listScanl1 _ [] = []
-inspect ('consScanl1List === 'listScanl1)
 
 consScanl1Text, textScanl1
   :: (Char -> Char -> Char) -> Data.Text.Text -> Data.Text.Text
 consScanl1Text = scanl1
 textScanl1 = Data.Text.scanl1
-inspect ('consScanl1Text === 'textScanl1)
 
 consScanl1TextLazy, textLazyScanl1
   :: (Char -> Char -> Char) -> Data.Text.Lazy.Text -> Data.Text.Lazy.Text
 consScanl1TextLazy = scanl1
 textLazyScanl1 = Data.Text.Lazy.scanl1
-inspect ('consScanl1TextLazy === 'textLazyScanl1)
 
 consScanl1ByteString, byteStringScanl1
   :: (Word8 -> Word8 -> Word8) -> Data.ByteString.ByteString -> Data.ByteString.ByteString
 consScanl1ByteString = scanl1
 byteStringScanl1 = Data.ByteString.scanl1
-inspect ('consScanl1ByteString === 'byteStringScanl1)
 
 consScanl1VectorLazy, vectorLazyScanl1
   :: (a -> a -> a) -> Data.Vector.Vector a -> Data.Vector.Vector a
 consScanl1VectorLazy = scanl1
 vectorLazyScanl1 = Data.Vector.scanl1
-inspect ('consScanl1VectorLazy === 'vectorLazyScanl1)
 
 
 {- scanr -}
@@ -145,25 +135,21 @@ consScanrText, textScanr
   :: (Char -> Char -> Char) -> Char -> Data.Text.Text -> Data.Text.Text
 consScanrText = scanr
 textScanr = Data.Text.scanr
-inspect ('consScanrText === 'textScanr)
 
 consScanrTextLazy, textLazyScanr
   :: (Char -> Char -> Char) -> Char -> Data.Text.Lazy.Text -> Data.Text.Lazy.Text
 consScanrTextLazy = scanr
 textLazyScanr = Data.Text.Lazy.scanr
-inspect ('consScanrTextLazy === 'textLazyScanr)
 
 consScanrByteString, byteStringScanr
   :: (Word8 -> Word8 -> Word8) -> Word8 -> Data.ByteString.ByteString -> Data.ByteString.ByteString
 consScanrByteString = scanr
 byteStringScanr = Data.ByteString.scanr
-inspect ('consScanrByteString === 'byteStringScanr)
 
 consScanrVectorLazy, vectorLazyScanr
   :: (a -> b -> b) -> b -> Data.Vector.Vector a -> Data.Vector.Vector b
 consScanrVectorLazy = scanr
 vectorLazyScanr = Data.Vector.scanr
-inspect ('consScanrVectorLazy === 'vectorLazyScanr)
 
 
 {- scanr1 -}
@@ -185,22 +171,42 @@ consScanr1Text, textScanr1
   :: (Char -> Char -> Char) -> Data.Text.Text -> Data.Text.Text
 consScanr1Text = scanr1
 textScanr1 = Data.Text.scanr1
-inspect ('consScanr1Text === 'textScanr1)
 
 consScanr1TextLazy, textLazyScanr1
   :: (Char -> Char -> Char) -> Data.Text.Lazy.Text -> Data.Text.Lazy.Text
 consScanr1TextLazy = scanr1
 textLazyScanr1 = Data.Text.Lazy.scanr1
-inspect ('consScanr1TextLazy === 'textLazyScanr1)
 
 consScanr1ByteString, byteStringScanr1
   :: (Word8 -> Word8 -> Word8) -> Data.ByteString.ByteString -> Data.ByteString.ByteString
 consScanr1ByteString = scanr1
 byteStringScanr1 = Data.ByteString.scanr1
-inspect ('consScanr1ByteString === 'byteStringScanr1)
 
 consScanr1VectorLazy, vectorLazyScanr1
   :: (a -> a -> a) -> Data.Vector.Vector a -> Data.Vector.Vector a
 consScanr1VectorLazy = scanr1
 vectorLazyScanr1 = Data.Vector.scanr1
-inspect ('consScanr1VectorLazy === 'vectorLazyScanr1)
+
+scansInspectionTests :: TestTree
+scansInspectionTests =
+  testGroup "Scans"
+    [ $(inspectTest ('consScanlText === 'textScanl))
+    , $(inspectTest ('consScanlTextLazy === 'textLazyScanl))
+    , $(inspectTest ('consScanlByteString === 'byteStringScanl))
+    , $(inspectTest ('consScanlByteStringLazy === 'byteStringLazyScanl))
+    , $(inspectTest ('consScanlVectorLazy === 'vectorLazyScanl))
+    , $(inspectTest ('consScanl'VectorLazy === 'vectorLazyScanl'))
+    , $(inspectTest ('consScanl1List === 'listScanl1))
+    , $(inspectTest ('consScanl1Text === 'textScanl1))
+    , $(inspectTest ('consScanl1TextLazy === 'textLazyScanl1))
+    , $(inspectTest ('consScanl1ByteString === 'byteStringScanl1))
+    , $(inspectTest ('consScanl1VectorLazy === 'vectorLazyScanl1))
+    , $(inspectTest ('consScanrText === 'textScanr))
+    , $(inspectTest ('consScanrTextLazy === 'textLazyScanr))
+    , $(inspectTest ('consScanrByteString === 'byteStringScanr))
+    , $(inspectTest ('consScanrVectorLazy === 'vectorLazyScanr))
+    , $(inspectTest ('consScanr1Text === 'textScanr1))
+    , $(inspectTest ('consScanr1TextLazy === 'textLazyScanr1))
+    , $(inspectTest ('consScanr1ByteString === 'byteStringScanr1))
+    , $(inspectTest ('consScanr1VectorLazy === 'vectorLazyScanr1))
+    ]

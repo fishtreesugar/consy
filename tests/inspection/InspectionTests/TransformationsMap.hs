@@ -2,7 +2,7 @@
 {-# language ScopedTypeVariables #-}
 {-# language NoImplicitPrelude #-}
 {-# language TemplateHaskell #-}
-{-# options_ghc -O -fplugin Test.Inspection.Plugin #-}
+{-# options_ghc -O -fplugin Test.Tasty.Inspection.Plugin #-}
 module InspectionTests.TransformationsMap where
 
 import Control.Applicative (ZipList(..))
@@ -24,7 +24,8 @@ import GHC.Enum (succ)
 import GHC.List (errorEmptyList)
 import GHC.Num (Num, Integer, (+), (-))
 import GHC.Real (fromIntegral)
-import Test.Inspection
+import Test.Tasty (TestTree, testGroup)
+import Test.Tasty.Inspection
 
 import qualified Data.ByteString
 import qualified Data.ByteString.Char8
@@ -50,24 +51,29 @@ listMap f = go
   where
     go [] = []
     go (x:xs) = f x : go xs
-inspect ('consMapList === 'listMap)
 
 consMapList2, consMapList2' :: forall a b c. (b -> c) -> (a -> b) -> [a] -> [c]
 consMapList2 g f = map g . (map f :: [a] -> [b])
 consMapList2' g f = map (g . f)
-inspect ('consMapList2 === 'consMapList2')
 
 consFoldrListLength, listFoldrLength :: [a] -> Int
 consFoldrListLength = foldr (\_ -> (+1)) 0
 listFoldrLength = Data.List.foldr (\_ -> (+1)) 0
-inspect ('consFoldrListLength === 'listFoldrLength)
 
 consMapFoldrTextLength, textMapFoldrLength :: (Char -> Char) -> Text -> Int
 consMapFoldrTextLength f = foldr (\_ -> (+1)) 0 . (map f :: Text -> Text)
 textMapFoldrLength f = Data.Text.foldr (\_ -> (+1)) 0 . Data.Text.map f
-inspect ('consMapFoldrTextLength === 'textMapFoldrLength)
 
 consMapSeq, seqMap :: (a -> a) -> Data.Sequence.Seq a -> Data.Sequence.Seq a
 consMapSeq = map
 seqMap = Data.Functor.fmap
-inspect ('consMapSeq === 'seqMap)
+
+transformationsMapInspectionTests :: TestTree
+transformationsMapInspectionTests =
+  testGroup "Transformations Map"
+    [ $(inspectTest ('consMapList === 'listMap))
+    , $(inspectTest ('consMapList2 === 'consMapList2'))
+    , $(inspectTest ('consFoldrListLength === 'listFoldrLength))
+    , $(inspectTest ('consMapFoldrTextLength === 'textMapFoldrLength))
+    , $(inspectTest ('consMapSeq === 'seqMap))
+    ]

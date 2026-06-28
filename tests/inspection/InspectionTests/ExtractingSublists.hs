@@ -1,7 +1,7 @@
 {-# language BangPatterns #-}
 {-# language NoImplicitPrelude #-}
 {-# language TemplateHaskell #-}
-{-# options_ghc -O -fplugin Test.Inspection.Plugin #-}
+{-# options_ghc -O -fplugin Test.Tasty.Inspection.Plugin #-}
 module InspectionTests.ExtractingSublists where
 
 import Control.Applicative (ZipList(..))
@@ -23,7 +23,8 @@ import GHC.Enum (succ)
 import GHC.List (errorEmptyList, (++))
 import GHC.Num (Num, Integer, (+), (-))
 import GHC.Real (fromIntegral)
-import Test.Inspection
+import Test.Tasty (TestTree, testGroup)
+import Test.Tasty.Inspection
 
 import qualified Data.ByteString
 import qualified Data.ByteString.Char8
@@ -53,47 +54,38 @@ listTake = go
             [] -> []
             (x : xs) -> x : go (n-1) xs
       | otherwise = []
-inspect ('consTakeList === 'listTake)
 
 consTakeText, textTake :: Int -> Text -> Text
 consTakeText = take
 textTake = Data.Text.take
-inspect ('consTakeText === 'textTake)
 
 consTakeText', textTake' :: Text -> Text
 consTakeText' = take 10
 textTake' = Data.Text.take 10
-inspect ('consTakeText' === 'textTake')
 
 consTakeText'', textTake'' :: Text
 consTakeText'' = take 10 (pack "bbbb")
 textTake'' = Data.Text.take 10 (pack "bbbb")
-inspect ('consTakeText'' === 'textTake'')
 
 consTakeLazyText, lazyTextTake :: Int -> Data.Text.Lazy.Text -> Data.Text.Lazy.Text
 consTakeLazyText = take
 lazyTextTake = \n -> Data.Text.Lazy.take (fromIntegral n)
-inspect ('consTakeLazyText === 'lazyTextTake)
 
 consTakeVector, vectorTake :: Int -> Vector a -> Vector a
 consTakeVector = take
 vectorTake = Data.Vector.take
-inspect ('consTakeVector === 'vectorTake)
 
 consTakeBS, bsTake :: Int -> Data.ByteString.ByteString -> Data.ByteString.ByteString
 consTakeBS = take
 bsTake = Data.ByteString.take
-inspect ('consTakeBS === 'bsTake)
 
 consTakeLBS, lbsTake :: Int64 -> Data.ByteString.Lazy.ByteString -> Data.ByteString.Lazy.ByteString
 consTakeLBS = take . fromIntegral
 lbsTake = \n -> Data.ByteString.Lazy.take (fromIntegral n)
-inspect ('consTakeLBS === 'lbsTake)
 
 consTakeSeq, seqTake :: Int -> Data.Sequence.Seq a -> Data.Sequence.Seq a
 consTakeSeq = take
 seqTake = Data.Sequence.take
-inspect ('consTakeSeq === 'seqTake)
 
 consMapTakeList, listMapTake :: (a -> a) -> Int -> [a] -> [a]
 consMapTakeList f n = map f . take n
@@ -109,12 +101,10 @@ listMapTake f !n s
             1 -> [f x]
             -- It's flipped because of the take + unsafeTakeList rules
             _ -> f x : go xs (n-1)
-inspect ('consMapTakeList === 'listMapTake)
 
 consTakeZipList, zipListTake :: Int -> ZipList a -> ZipList a
 consTakeZipList n = take n
 zipListTake n = ZipList . listTake n . getZipList
-inspect ('consTakeZipList ==- 'zipListTake)
 
 
 {- drop -}
@@ -128,47 +118,38 @@ listDrop = go
             [] -> []
             (x : xs) -> go (n-1) xs
       | otherwise = []
-inspect ('consDropList === 'listDrop)
 
 consDropText, textDrop :: Int -> Text -> Text
 consDropText = drop
 textDrop = Data.Text.drop
-inspect ('consDropText === 'textDrop)
 
 consDropText', textDrop' :: Text -> Text
 consDropText' = drop 10
 textDrop' = Data.Text.drop 10
-inspect ('consDropText' === 'textDrop')
 
 consDropText'', textDrop'' :: Text
 consDropText'' = drop 10 (pack "bbbb")
 textDrop'' = Data.Text.drop 10 (pack "bbbb")
-inspect ('consDropText'' === 'textDrop'')
 
 consDropLazyText, lazyTextDrop :: Int -> Data.Text.Lazy.Text -> Data.Text.Lazy.Text
 consDropLazyText = drop
 lazyTextDrop = Data.Text.Lazy.drop . fromIntegral
-inspect ('consDropLazyText === 'lazyTextDrop)
 
 consDropVector, vectorDrop :: Int -> Vector a -> Vector a
 consDropVector = drop
 vectorDrop = Data.Vector.drop
-inspect ('consDropVector === 'vectorDrop)
 
 consDropBS, bsDrop :: Int -> Data.ByteString.ByteString -> Data.ByteString.ByteString
 consDropBS = drop
 bsDrop = Data.ByteString.drop
-inspect ('consDropBS === 'bsDrop)
 
 consDropLBS, lbsDrop :: Int -> Data.ByteString.Lazy.ByteString -> Data.ByteString.Lazy.ByteString
 consDropLBS = drop
 lbsDrop = \n -> Data.ByteString.Lazy.drop (fromIntegral n)
-inspect ('consDropLBS === 'lbsDrop)
 
 consDropSeq, seqDrop :: Int -> Data.Sequence.Seq a -> Data.Sequence.Seq a
 consDropSeq = drop
 seqDrop = Data.Sequence.drop
-inspect ('consDropSeq === 'seqDrop)
 
 
 {- splitAt -}
@@ -196,42 +177,34 @@ inspect ('consSplitAtList ==- 'listSplitAt)
 consSplitAtText, textSplitAt :: Int -> Text -> (Text, Text)
 consSplitAtText = splitAt
 textSplitAt = Data.Text.splitAt
-inspect ('consSplitAtText === 'textSplitAt)
 
 consSplitAtText', textSplitAt' :: Text -> (Text, Text)
 consSplitAtText' = splitAt 10
 textSplitAt' = Data.Text.splitAt 10
-inspect ('consSplitAtText' === 'textSplitAt')
 
 consSplitAtText'', textSplitAt'' :: (Text, Text)
 consSplitAtText'' = splitAt 10 (pack "bbbb")
 textSplitAt'' = Data.Text.splitAt 10 (pack "bbbb")
-inspect ('consSplitAtText'' === 'textSplitAt'')
 
 consSplitAtLazyText, lazyTextSplitAt :: Int64 -> Data.Text.Lazy.Text -> (Data.Text.Lazy.Text, Data.Text.Lazy.Text)
 consSplitAtLazyText = splitAt . fromIntegral
 lazyTextSplitAt = Data.Text.Lazy.splitAt
-inspect ('consSplitAtLazyText === 'lazyTextSplitAt)
 
 consSplitAtVector, vectorSplitAt :: Int -> Vector a -> (Vector a, Vector a)
 consSplitAtVector = splitAt
 vectorSplitAt = Data.Vector.splitAt
-inspect ('consSplitAtVector === 'vectorSplitAt)
 
 consSplitAtBS, bsSplitAt :: Int -> Data.ByteString.ByteString -> (Data.ByteString.ByteString, Data.ByteString.ByteString)
 consSplitAtBS = splitAt
 bsSplitAt = Data.ByteString.splitAt
-inspect ('consSplitAtBS === 'bsSplitAt)
 
 consSplitAtLBS, lbsSplitAt :: Int -> Data.ByteString.Lazy.ByteString -> (Data.ByteString.Lazy.ByteString, Data.ByteString.Lazy.ByteString)
 consSplitAtLBS = splitAt
 lbsSplitAt = \n -> Data.ByteString.Lazy.splitAt (fromIntegral n)
-inspect ('consSplitAtLBS === 'lbsSplitAt)
 
 consSplitAtSeq, seqSplitAt :: Int -> Data.Sequence.Seq a -> (Data.Sequence.Seq a, Data.Sequence.Seq a)
 consSplitAtSeq = splitAt
 seqSplitAt = Data.Sequence.splitAt
-inspect ('consSplitAtSeq === 'seqSplitAt)
 
 
 {- takeWhile -}
@@ -245,37 +218,30 @@ listTakeWhile p = go p
         (x : xs) -> if p x
                     then x : (go p xs)
                     else []
-inspect ('consTakeWhileList === 'listTakeWhile)
 
 consTakeWhileText, textTakeWhile :: (Char -> Bool) -> Text -> Text
 consTakeWhileText = takeWhile
 textTakeWhile = Data.Text.takeWhile
-inspect ('consTakeWhileText === 'textTakeWhile)
 
 consTakeWhileText', textTakeWhile' :: Text -> Text
 consTakeWhileText' = takeWhile Data.Char.isUpper
 textTakeWhile' = Data.Text.takeWhile Data.Char.isUpper
-inspect ('consTakeWhileText' === 'textTakeWhile')
 
 consTakeWhileLazyText, lazyTextTakeWhile :: (Char -> Bool) -> Data.Text.Lazy.Text -> Data.Text.Lazy.Text
 consTakeWhileLazyText = takeWhile
 lazyTextTakeWhile = Data.Text.Lazy.takeWhile
-inspect ('consTakeWhileLazyText === 'lazyTextTakeWhile)
 
 consTakeWhileVector, vectorTakeWhile :: (a -> Bool) -> Vector a -> Vector a
 consTakeWhileVector = takeWhile
 vectorTakeWhile = Data.Vector.takeWhile
-inspect ('consTakeWhileVector === 'vectorTakeWhile)
 
 consTakeWhileBS, bsTakeWhile :: (Word8 -> Bool) -> Data.ByteString.ByteString -> Data.ByteString.ByteString
 consTakeWhileBS = takeWhile
 bsTakeWhile = Data.ByteString.takeWhile
-inspect ('consTakeWhileBS === 'bsTakeWhile)
 
 consTakeWhileLBS, lbsTakeWhile :: (Word8 -> Bool) -> Data.ByteString.Lazy.ByteString -> Data.ByteString.Lazy.ByteString
 consTakeWhileLBS = takeWhile
 lbsTakeWhile = Data.ByteString.Lazy.takeWhile
-inspect ('consTakeWhileLBS === 'lbsTakeWhile)
 
 
 {- dropWhile -}
@@ -289,37 +255,30 @@ listDropWhile p = go p
         (x : xs) -> if p x
                     then go p xs
                     else xs
-inspect ('consDropWhileList === 'listDropWhile)
 
 consDropWhileText, textDropWhile :: (Char -> Bool) -> Text -> Text
 consDropWhileText = dropWhile
 textDropWhile = Data.Text.dropWhile
-inspect ('consDropWhileText === 'textDropWhile)
 
 consDropWhileText', textDropWhile' :: Text -> Text
 consDropWhileText' = dropWhile Data.Char.isUpper
 textDropWhile' = Data.Text.dropWhile Data.Char.isUpper
-inspect ('consDropWhileText' === 'textDropWhile')
 
 consDropWhileLazyText, lazyTextDropWhile :: (Char -> Bool) -> Data.Text.Lazy.Text -> Data.Text.Lazy.Text
 consDropWhileLazyText = dropWhile
 lazyTextDropWhile = Data.Text.Lazy.dropWhile
-inspect ('consDropWhileLazyText === 'lazyTextDropWhile)
 
 consDropWhileVector, vectorDropWhile :: (a -> Bool) -> Vector a -> Vector a
 consDropWhileVector = dropWhile
 vectorDropWhile = Data.Vector.dropWhile
-inspect ('consDropWhileVector === 'vectorDropWhile)
 
 consDropWhileBS, bsDropWhile :: (Word8 -> Bool) -> Data.ByteString.ByteString -> Data.ByteString.ByteString
 consDropWhileBS = dropWhile
 bsDropWhile = Data.ByteString.dropWhile
-inspect ('consDropWhileBS === 'bsDropWhile)
 
 consDropWhileLBS, lbsDropWhile :: (Word8 -> Bool) -> Data.ByteString.Lazy.ByteString -> Data.ByteString.Lazy.ByteString
 consDropWhileLBS = dropWhile
 lbsDropWhile = Data.ByteString.Lazy.dropWhile
-inspect ('consDropWhileLBS === 'lbsDropWhile)
 
 
 {- dropWhileEnd -}
@@ -333,22 +292,18 @@ listDropWhileEnd p = go p
                   then []
                   else x : xs)
         []
-inspect ('consDropWhileEndList === 'listDropWhileEnd)
 
 consDropWhileEndText, textDropWhileEnd :: (Char -> Bool) -> Text -> Text
 consDropWhileEndText = dropWhileEnd
 textDropWhileEnd = Data.Text.dropWhileEnd
-inspect ('consDropWhileEndText === 'textDropWhileEnd)
 
 consDropWhileEndText', textDropWhileEnd' :: Text -> Text
 consDropWhileEndText' = dropWhileEnd Data.Char.isUpper
 textDropWhileEnd' = Data.Text.dropWhileEnd Data.Char.isUpper
-inspect ('consDropWhileEndText' === 'textDropWhileEnd')
 
 consDropWhileEndLazyText, lazyTextDropWhileEnd :: (Char -> Bool) -> Data.Text.Lazy.Text -> Data.Text.Lazy.Text
 consDropWhileEndLazyText = dropWhileEnd
 lazyTextDropWhileEnd = Data.Text.Lazy.dropWhileEnd
-inspect ('consDropWhileEndLazyText === 'lazyTextDropWhileEnd)
 
 
 {- span -}
@@ -362,74 +317,60 @@ listSpan p = \s -> go p s
         (x : xs) -> if p x
                     then let (ys,zs) = listSpan p xs in (x:ys,zs)
                     else ([], s)
-inspect ('consSpanList === 'listSpan)
 
 consSpanText, textSpan :: (Char -> Bool) -> Text -> (Text, Text)
 consSpanText = span
 textSpan = Data.Text.span
-inspect ('consSpanText === 'textSpan)
 
 consSpanText', textSpan' :: Text -> (Text, Text)
 consSpanText' = span Data.Char.isUpper
 textSpan' = Data.Text.span Data.Char.isUpper
-inspect ('consSpanText' === 'textSpan')
 
 consSpanLazyText, lazyTextSpan :: (Char -> Bool) -> Data.Text.Lazy.Text -> (Data.Text.Lazy.Text, Data.Text.Lazy.Text)
 consSpanLazyText = span
 lazyTextSpan = Data.Text.Lazy.span
-inspect ('consSpanLazyText === 'lazyTextSpan)
 
 consSpanVector, vectorSpan :: (a -> Bool) -> Vector a -> (Vector a, Vector a)
 consSpanVector = span
 vectorSpan = Data.Vector.span
-inspect ('consSpanVector === 'vectorSpan)
 
 consSpanBS, bsSpan :: (Word8 -> Bool) -> Data.ByteString.ByteString -> (Data.ByteString.ByteString, Data.ByteString.ByteString)
 consSpanBS = span
 bsSpan = Data.ByteString.span
-inspect ('consSpanBS === 'bsSpan)
 
 consSpanLBS, lbsSpan :: (Word8 -> Bool) -> Data.ByteString.Lazy.ByteString -> (Data.ByteString.Lazy.ByteString, Data.ByteString.Lazy.ByteString)
 consSpanLBS = span
 lbsSpan = Data.ByteString.Lazy.span
-inspect ('consSpanLBS === 'lbsSpan)
 
 
 {- break -}
 consBreakList, listBreak :: (a -> Bool) -> [a] -> ([a], [a])
 consBreakList = break
 listBreak = \p -> listSpan (not . p)
-inspect ('consBreakList === 'listBreak)
 
 consBreakText, textBreak :: (Char -> Bool) -> Text -> (Text, Text)
 consBreakText = break
 textBreak = Data.Text.break
-inspect ('consBreakText === 'textBreak)
 
 consBreakText', textBreak' :: Text -> (Text, Text)
 consBreakText' = break Data.Char.isUpper
 textBreak' = Data.Text.break Data.Char.isUpper
-inspect ('consBreakText' === 'textBreak')
 
 consBreakLazyText, lazyTextBreak :: (Char -> Bool) -> Data.Text.Lazy.Text -> (Data.Text.Lazy.Text, Data.Text.Lazy.Text)
 consBreakLazyText = break
 lazyTextBreak = Data.Text.Lazy.break
-inspect ('consBreakLazyText === 'lazyTextBreak)
 
 consBreakVector, vectorBreak :: (a -> Bool) -> Vector a -> (Vector a, Vector a)
 consBreakVector = break
 vectorBreak = Data.Vector.break
-inspect ('consBreakVector === 'vectorBreak)
 
 consBreakBS, bsBreak :: (Word8 -> Bool) -> Data.ByteString.ByteString -> (Data.ByteString.ByteString, Data.ByteString.ByteString)
 consBreakBS = break
 bsBreak = Data.ByteString.break
-inspect ('consBreakBS === 'bsBreak)
 
 consBreakLBS, lbsBreak :: (Word8 -> Bool) -> Data.ByteString.Lazy.ByteString -> (Data.ByteString.Lazy.ByteString, Data.ByteString.Lazy.ByteString)
 consBreakLBS = break
 lbsBreak = Data.ByteString.Lazy.break
-inspect ('consBreakLBS === 'lbsBreak)
 
 
 {- stripPrefix -}
@@ -444,17 +385,14 @@ listStripPrefix = \xss -> go xss
           | (y:ys) <- yss
           , x == y -> go xs ys
         _ -> Nothing
-inspect ('consStripPrefixList === 'listStripPrefix)
 
 consStripPrefixText, textStripPrefix :: Text -> Text -> Maybe Text
 consStripPrefixText = stripPrefix
 textStripPrefix = Data.Text.stripPrefix
-inspect ('consStripPrefixText === 'textStripPrefix)
 
 consStripPrefixLazyText, lazyTextStripPrefix :: Data.Text.Lazy.Text -> Data.Text.Lazy.Text -> Maybe Data.Text.Lazy.Text
 consStripPrefixLazyText = stripPrefix
 lazyTextStripPrefix = Data.Text.Lazy.stripPrefix
-inspect ('consStripPrefixLazyText === 'lazyTextStripPrefix)
 
 {- groupBy -}
 consGroupByList, listGroupBy :: (a -> a -> Bool) -> [a] -> [[a]]
@@ -466,58 +404,47 @@ listGroupBy p = \s -> go p s
         [] -> []
         (x:xs) -> (x:ys) : go p zs
                     where (ys,zs) = listSpan (p x) xs
-inspect ('consGroupByList === 'listGroupBy)
 
 consGroupByText, textGroupBy :: (Char -> Char -> Bool) -> Text -> [Text]
 consGroupByText = groupBy
 textGroupBy = Data.Text.groupBy
-inspect ('consGroupByText === 'textGroupBy)
 
 consGroupByText', textGroupBy' :: Text -> [Text]
 consGroupByText' = groupBy (==)
 textGroupBy' = Data.Text.groupBy (==)
-inspect ('consGroupByText' === 'textGroupBy')
 
 consGroupByLazyText, lazyTextGroupBy :: (Char -> Char -> Bool) -> Data.Text.Lazy.Text -> [Data.Text.Lazy.Text]
 consGroupByLazyText = groupBy
 lazyTextGroupBy = Data.Text.Lazy.groupBy
-inspect ('consGroupByLazyText === 'lazyTextGroupBy)
 
 consGroupByBS, bsGroupBy :: (Word8 -> Word8 -> Bool) -> Data.ByteString.ByteString -> [Data.ByteString.ByteString]
 consGroupByBS = groupBy
 bsGroupBy = Data.ByteString.groupBy
-inspect ('consGroupByBS === 'bsGroupBy)
 
 consGroupByLBS, lbsGroupBy :: (Word8 -> Word8 -> Bool) -> Data.ByteString.Lazy.ByteString -> [Data.ByteString.Lazy.ByteString]
 consGroupByLBS = groupBy
 lbsGroupBy = Data.ByteString.Lazy.groupBy
-inspect ('consGroupByLBS === 'lbsGroupBy)
 
 {- group -}
 consGroupList, listGroup :: Eq a => [a] -> [[a]]
 consGroupList = group
 listGroup = listGroupBy (==)
-inspect ('consGroupList === 'listGroup)
 
 consGroupText, textGroup :: Text -> [Text]
 consGroupText = group
 textGroup = Data.Text.group
-inspect ('consGroupText === 'textGroup)
 
 consGroupLazyText, lazyTextGroup :: Data.Text.Lazy.Text -> [Data.Text.Lazy.Text]
 consGroupLazyText = group
 lazyTextGroup = Data.Text.Lazy.group
-inspect ('consGroupLazyText === 'lazyTextGroup)
 
 consGroupBS, bsGroup :: Data.ByteString.ByteString -> [Data.ByteString.ByteString]
 consGroupBS = group
 bsGroup = Data.ByteString.group
-inspect ('consGroupBS === 'bsGroup)
 
 consGroupLBS, lbsGroup :: Data.ByteString.Lazy.ByteString -> [Data.ByteString.Lazy.ByteString]
 consGroupLBS = group
 lbsGroup = Data.ByteString.Lazy.group
-inspect ('consGroupLBS === 'lbsGroup)
 
 
 {- inits -}
@@ -539,27 +466,22 @@ inspect ('consInitsList === 'listInits)
 consInitsText, textInits :: Text -> [Text]
 consInitsText = inits
 textInits = Data.Text.inits
-inspect ('consInitsText === 'textInits)
 
 consInitsLazyText, lazyTextInits :: Data.Text.Lazy.Text -> [Data.Text.Lazy.Text]
 consInitsLazyText = inits
 lazyTextInits = Data.Text.Lazy.inits
-inspect ('consInitsLazyText === 'lazyTextInits)
 
 consInitsBS, bsInits :: Data.ByteString.ByteString -> [Data.ByteString.ByteString]
 consInitsBS = inits
 bsInits = Data.ByteString.inits
-inspect ('consInitsBS === 'bsInits)
 
 consInitsLBS, lbsInits :: Data.ByteString.Lazy.ByteString -> [Data.ByteString.Lazy.ByteString]
 consInitsLBS = inits
 lbsInits = Data.ByteString.Lazy.inits
-inspect ('consInitsLBS === 'lbsInits)
 
 consInitsSeq, seqInits :: Seq a -> Seq (Seq a)
 consInitsSeq = inits
 seqInits = Data.Sequence.inits
-inspect ('consInitsSeq === 'seqInits)
 
 
 {- tails -}
@@ -570,29 +492,113 @@ listTails lst =  build (\c n ->
                             [] -> n
                             (_ : xs') -> tailsGo xs'
   in tailsGo lst)
-inspect ('consTailsList === 'listTails)
 
 consTailsText, textTails :: Text -> [Text]
 consTailsText = tails
 textTails = Data.Text.tails
-inspect ('consTailsText === 'textTails)
 
 consTailsLazyText, lazyTextTails :: Data.Text.Lazy.Text -> [Data.Text.Lazy.Text]
 consTailsLazyText = tails
 lazyTextTails = Data.Text.Lazy.tails
-inspect ('consTailsLazyText === 'lazyTextTails)
 
 consTailsBS, bsTails :: Data.ByteString.ByteString -> [Data.ByteString.ByteString]
 consTailsBS = tails
 bsTails = Data.ByteString.tails
-inspect ('consTailsBS === 'bsTails)
 
 consTailsLBS, lbsTails :: Data.ByteString.Lazy.ByteString -> [Data.ByteString.Lazy.ByteString]
 consTailsLBS = tails
 lbsTails = Data.ByteString.Lazy.tails
-inspect ('consTailsLBS === 'lbsTails)
 
 consTailsSeq, seqTails :: Seq a -> Seq (Seq a)
 consTailsSeq = tails
 seqTails = Data.Sequence.tails
-inspect ('consTailsSeq === 'seqTails)
+
+extractingSublistsInspectionTests :: TestTree
+extractingSublistsInspectionTests =
+  testGroup "Extracting Sublists"
+    [ $(inspectTest ('consTakeList === 'listTake))
+    , $(inspectTest ('consTakeText === 'textTake))
+    , $(inspectTest ('consTakeText' === 'textTake'))
+    , $(inspectTest ('consTakeText'' === 'textTake''))
+    , $(inspectTest ('consTakeLazyText === 'lazyTextTake))
+    , $(inspectTest ('consTakeVector === 'vectorTake))
+    , $(inspectTest ('consTakeBS === 'bsTake))
+    , $(inspectTest ('consTakeLBS === 'lbsTake))
+    , $(inspectTest ('consTakeSeq === 'seqTake))
+    , $(inspectTest ('consMapTakeList === 'listMapTake))
+    , $(inspectTest ('consTakeZipList ==- 'zipListTake))
+    , $(inspectTest ('consDropList === 'listDrop))
+    , $(inspectTest ('consDropText === 'textDrop))
+    , $(inspectTest ('consDropText' === 'textDrop'))
+    , $(inspectTest ('consDropText'' === 'textDrop''))
+    , $(inspectTest ('consDropLazyText === 'lazyTextDrop))
+    , $(inspectTest ('consDropVector === 'vectorDrop))
+    , $(inspectTest ('consDropBS === 'bsDrop))
+    , $(inspectTest ('consDropLBS === 'lbsDrop))
+    , $(inspectTest ('consDropSeq === 'seqDrop))
+    , $(inspectTest ('consSplitAtText === 'textSplitAt))
+    , $(inspectTest ('consSplitAtText' === 'textSplitAt'))
+    , $(inspectTest ('consSplitAtText'' === 'textSplitAt''))
+    , $(inspectTest ('consSplitAtLazyText === 'lazyTextSplitAt))
+    , $(inspectTest ('consSplitAtVector === 'vectorSplitAt))
+    , $(inspectTest ('consSplitAtBS === 'bsSplitAt))
+    , $(inspectTest ('consSplitAtLBS === 'lbsSplitAt))
+    , $(inspectTest ('consSplitAtSeq === 'seqSplitAt))
+    , $(inspectTest ('consTakeWhileList === 'listTakeWhile))
+    , $(inspectTest ('consTakeWhileText === 'textTakeWhile))
+    , $(inspectTest ('consTakeWhileText' === 'textTakeWhile'))
+    , $(inspectTest ('consTakeWhileLazyText === 'lazyTextTakeWhile))
+    , $(inspectTest ('consTakeWhileVector === 'vectorTakeWhile))
+    , $(inspectTest ('consTakeWhileBS === 'bsTakeWhile))
+    , $(inspectTest ('consTakeWhileLBS === 'lbsTakeWhile))
+    , $(inspectTest ('consDropWhileList === 'listDropWhile))
+    , $(inspectTest ('consDropWhileText === 'textDropWhile))
+    , $(inspectTest ('consDropWhileText' === 'textDropWhile'))
+    , $(inspectTest ('consDropWhileLazyText === 'lazyTextDropWhile))
+    , $(inspectTest ('consDropWhileVector === 'vectorDropWhile))
+    , $(inspectTest ('consDropWhileBS === 'bsDropWhile))
+    , $(inspectTest ('consDropWhileLBS === 'lbsDropWhile))
+    , $(inspectTest ('consDropWhileEndList === 'listDropWhileEnd))
+    , $(inspectTest ('consDropWhileEndText === 'textDropWhileEnd))
+    , $(inspectTest ('consDropWhileEndText' === 'textDropWhileEnd'))
+    , $(inspectTest ('consDropWhileEndLazyText === 'lazyTextDropWhileEnd))
+    , $(inspectTest ('consSpanList === 'listSpan))
+    , $(inspectTest ('consSpanText === 'textSpan))
+    , $(inspectTest ('consSpanText' === 'textSpan'))
+    , $(inspectTest ('consSpanLazyText === 'lazyTextSpan))
+    , $(inspectTest ('consSpanVector === 'vectorSpan))
+    , $(inspectTest ('consSpanBS === 'bsSpan))
+    , $(inspectTest ('consSpanLBS === 'lbsSpan))
+    , $(inspectTest ('consBreakList === 'listBreak))
+    , $(inspectTest ('consBreakText === 'textBreak))
+    , $(inspectTest ('consBreakText' === 'textBreak'))
+    , $(inspectTest ('consBreakLazyText === 'lazyTextBreak))
+    , $(inspectTest ('consBreakVector === 'vectorBreak))
+    , $(inspectTest ('consBreakBS === 'bsBreak))
+    , $(inspectTest ('consBreakLBS === 'lbsBreak))
+    , $(inspectTest ('consStripPrefixList === 'listStripPrefix))
+    , $(inspectTest ('consStripPrefixText === 'textStripPrefix))
+    , $(inspectTest ('consStripPrefixLazyText === 'lazyTextStripPrefix))
+    , $(inspectTest ('consGroupByList === 'listGroupBy))
+    , $(inspectTest ('consGroupByText === 'textGroupBy))
+    , $(inspectTest ('consGroupByText' === 'textGroupBy'))
+    , $(inspectTest ('consGroupByLazyText === 'lazyTextGroupBy))
+    , $(inspectTest ('consGroupByBS === 'bsGroupBy))
+    , $(inspectTest ('consGroupByLBS === 'lbsGroupBy))
+    , $(inspectTest ('consGroupList === 'listGroup))
+    , $(inspectTest ('consGroupText === 'textGroup))
+    , $(inspectTest ('consGroupLazyText === 'lazyTextGroup))
+    , $(inspectTest ('consGroupBS === 'bsGroup))
+    , $(inspectTest ('consGroupLBS === 'lbsGroup))
+    , $(inspectTest ('consInitsText === 'textInits))
+    , $(inspectTest ('consInitsLazyText === 'lazyTextInits))
+    , $(inspectTest ('consInitsBS === 'bsInits))
+    , $(inspectTest ('consInitsLBS === 'lbsInits))
+    , $(inspectTest ('consInitsSeq === 'seqInits))
+    , $(inspectTest ('consTailsList === 'listTails))
+    , $(inspectTest ('consTailsText === 'textTails))
+    , $(inspectTest ('consTailsLazyText === 'lazyTextTails))
+    , $(inspectTest ('consTailsBS === 'bsTails))
+    , $(inspectTest ('consTailsLBS === 'lbsTails))
+    , $(inspectTest ('consTailsSeq === 'seqTails))
+    ]
