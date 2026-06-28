@@ -32,6 +32,7 @@ import GHC.Real (Integral, fromIntegral)
 
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.ByteString as BS
+import qualified Data.List
 import qualified Data.Sequence
 import qualified Data.Text
 import qualified Data.Text.Lazy
@@ -85,6 +86,12 @@ elemIndex = \x -> findIndex (x==)
 "cons elemIndex bslazy eta"
     forall x xs.
     elemIndex @LBS.ByteString x xs = fromIntegral <$> (LBS.elemIndex x xs)
+
+"cons elemIndex list"
+    elemIndex @[_] = Data.List.elemIndex
+"cons elemIndex list eta"
+    forall x xs.
+    elemIndex @[_] x xs = Data.List.elemIndex x xs
 #-}
 
 
@@ -105,6 +112,12 @@ elemIndices x = findIndices (x==)
 "cons elemIndices bslazy eta"
     forall x xs.
     elemIndices @LBS.ByteString x xs = fromIntegral <$> (LBS.elemIndices x xs)
+
+"cons elemIndices list"
+    elemIndices @[_] = Data.List.elemIndices
+"cons elemIndices list eta"
+    forall x xs.
+    elemIndices @[_] x xs = Data.List.elemIndices x xs
 #-}
 
 
@@ -137,6 +150,12 @@ findIndex = \p -> foldr (const . Just) Nothing . findIndices p
 "cons findIndex bslazy eta" [~2]
     forall p xs.
     findIndex @LBS.ByteString p xs = fromIntegral <$> LBS.findIndex p xs
+
+"cons findIndex list" [~2]
+    findIndex @[_] = Data.List.findIndex
+"cons findIndex list eta" [~2]
+    forall p xs.
+    findIndex @[_] p xs = Data.List.findIndex p xs
 #-}
 
 

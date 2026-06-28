@@ -1,7 +1,7 @@
 {-# language NoImplicitPrelude #-}
 module Main where
 
-import Criterion.Main
+import Test.Tasty.Bench
 
 import Control.Applicative (ZipList(..), pure)
 import Data.Function (($), (.))

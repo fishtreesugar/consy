@@ -21,6 +21,7 @@ import Data.Vector (Vector)
 
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.ByteString as BS
+import qualified Data.List
 import qualified Data.Sequence
 import qualified Data.Text
 import qualified Data.Text.Lazy
@@ -139,6 +140,12 @@ filterFB c p x r
 "cons filter seq eta"
     forall p xs.
     filter @(Seq _) p xs = Data.Sequence.filter p xs
+
+"cons filter list"
+    filter @[_] = Data.List.filter
+"cons filter list eta"
+    forall p xs.
+    filter @[_] p xs = Data.List.filter p xs
 #-}
 
 {-# inline [2] partition #-}

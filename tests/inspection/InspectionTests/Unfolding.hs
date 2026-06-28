@@ -1,7 +1,7 @@
 {-# language BangPatterns #-}
 {-# language NoImplicitPrelude #-}
 {-# language TemplateHaskell #-}
-{-# options_ghc -O -fplugin Test.Inspection.Plugin #-}
+{-# options_ghc -O -fplugin Test.Tasty.Inspection.Plugin #-}
 module InspectionTests.Unfolding where
 
 import Control.Applicative (ZipList(..))
@@ -23,7 +23,8 @@ import GHC.Enum (succ)
 import GHC.List (errorEmptyList)
 import GHC.Num (Num, Integer, (+), (-))
 import GHC.Real (fromIntegral)
-import Test.Inspection
+import Test.Tasty (TestTree, testGroup)
+import Test.Tasty.Inspection
 
 import qualified Data.ByteString
 import qualified Data.ByteString.Char8
@@ -53,29 +54,34 @@ listUnfoldr f b0 =
           Just (a, new_b) -> a `c` go new_b
           Nothing         -> n
       in go b0)
-inspect ('consListUnfoldr === 'listUnfoldr)
 
 consUnfoldrText, textUnfoldr :: (a -> Maybe (Char, a)) -> a -> Text
 consUnfoldrText = unfoldr
 textUnfoldr = Data.Text.unfoldr
-inspect ('consUnfoldrText === 'textUnfoldr)
 
 consUnfoldrLazyText, lazyTextUnfoldr :: (a -> Maybe (Char, a)) -> a -> Data.Text.Lazy.Text
 consUnfoldrLazyText = unfoldr
 lazyTextUnfoldr = Data.Text.Lazy.unfoldr
-inspect ('consUnfoldrLazyText === 'lazyTextUnfoldr)
 
 consUnfoldrBS, bsUnfoldr :: (a -> Maybe (Word8, a)) -> a -> Data.ByteString.ByteString
 consUnfoldrBS = unfoldr
 bsUnfoldr = Data.ByteString.unfoldr
-inspect ('consUnfoldrBS === 'bsUnfoldr)
 
 consUnfoldrLBS, lbsUnfoldr :: (a -> Maybe (Word8, a)) -> a -> Data.ByteString.Lazy.ByteString
 consUnfoldrLBS = unfoldr
 lbsUnfoldr = Data.ByteString.Lazy.unfoldr
-inspect ('consUnfoldrLBS === 'lbsUnfoldr)
 
 consUnfoldrSeq, seqUnfoldr ::  (b -> Maybe (a, b)) -> b -> Data.Sequence.Seq a
 consUnfoldrSeq = unfoldr
 seqUnfoldr = Data.Sequence.unfoldr
-inspect ('consUnfoldrSeq === 'seqUnfoldr)
+
+unfoldingInspectionTests :: TestTree
+unfoldingInspectionTests =
+  testGroup "Unfolding"
+    [ $(inspectTest ('consListUnfoldr === 'listUnfoldr))
+    , $(inspectTest ('consUnfoldrText === 'textUnfoldr))
+    , $(inspectTest ('consUnfoldrLazyText === 'lazyTextUnfoldr))
+    , $(inspectTest ('consUnfoldrBS === 'bsUnfoldr))
+    , $(inspectTest ('consUnfoldrLBS === 'lbsUnfoldr))
+    , $(inspectTest ('consUnfoldrSeq === 'seqUnfoldr))
+    ]

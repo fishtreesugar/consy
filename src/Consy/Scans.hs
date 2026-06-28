@@ -15,6 +15,7 @@ import Consy.Folds (foldr, build)
 
 import qualified Data.ByteString
 import qualified Data.ByteString.Lazy
+import qualified Data.List
 import qualified Data.Text
 import qualified Data.Text.Lazy
 import qualified Data.Vector
@@ -161,6 +162,13 @@ scanl1 = \f a ->
 "scanl1 cons vector eta" [~2]
     forall a b.
     scanl1 @(Data.Vector.Vector _) a b = Data.Vector.scanl1 a b
+
+"scanl1 cons list" [~2]
+    scanl1 @[_] = Data.List.scanl1
+
+"scanl1 cons list eta" [~2]
+    forall a b.
+    scanl1 @[_] a b = Data.List.scanl1 a b
 #-}
 
 

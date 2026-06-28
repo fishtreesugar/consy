@@ -27,6 +27,7 @@ import Data.Text (Text)
 import Data.Vector (Vector)
 import GHC.Base (oneShot, seq)
 import GHC.List (errorEmptyList)
+import GHC.Stack (withFrozenCallStack)
 
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.ByteString as BS
@@ -160,10 +161,10 @@ foldl1 k s =
 
 {-# rules
 "cons foldl1 text" [~2]
-    foldl1 @Text @Char = Data.Text.foldl1
+    foldl1 @Text @Char = withFrozenCallStack Data.Text.foldl1
 "cons foldl1 text eta" [~2]
     forall f xs.
-    foldl1 @Text @Char f xs = Data.Text.foldl1 f xs
+    foldl1 @Text @Char f xs = withFrozenCallStack Data.Text.foldl1 f xs
 
 "cons foldl1 vector" [~2]
     foldl1 @(Vector _) = Data.Vector.foldl1
@@ -201,10 +202,10 @@ foldl1' k s =
 
 {-# rules
 "cons foldl1' text" [~2]
-    foldl1' @Text @Char = Data.Text.foldl1'
+    foldl1' @Text @Char = withFrozenCallStack Data.Text.foldl1'
 "cons foldl1' text eta" [~2]
     forall f xs.
-    foldl1' @Text @Char f xs = Data.Text.foldl1' f xs
+    foldl1' @Text @Char f xs = withFrozenCallStack Data.Text.foldl1' f xs
 
 "cons foldl1' vector" [~2]
     foldl1' @(Vector _) = Data.Vector.foldl1'
@@ -297,10 +298,10 @@ foldr1 f = go
 --     foldr1 f z (build g) = g f z
 
 "cons foldr1 text" [~2]
-    foldr1 @Data.Text.Text = Data.Text.foldr1
+    foldr1 @Data.Text.Text = withFrozenCallStack Data.Text.foldr1
 "cons foldr1 text eta" [~2]
     forall f xs.
-    foldr1 @Data.Text.Text f xs = Data.Text.foldr1 f xs
+    foldr1 @Data.Text.Text f xs = withFrozenCallStack Data.Text.foldr1 f xs
 
 "cons foldr1 vector" [~2]
     foldr1 @(Vector _) = Data.Vector.foldr1

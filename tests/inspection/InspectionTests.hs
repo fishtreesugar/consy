@@ -1,5 +1,6 @@
 module InspectionTests
-  ( module InspectionTests.AccumulatingMaps
+  ( inspectionTests
+  , module InspectionTests.AccumulatingMaps
   , module InspectionTests.Basic
   , module InspectionTests.ExtractingSublists
   , module InspectionTests.Folds
@@ -17,6 +18,8 @@ module InspectionTests
   )
 where
 
+import Test.Tasty (TestTree, testGroup)
+
 import InspectionTests.AccumulatingMaps
 import InspectionTests.Basic
 import InspectionTests.ExtractingSublists
@@ -32,3 +35,23 @@ import InspectionTests.Transformations
 import InspectionTests.TransformationsMap
 import InspectionTests.Unfolding
 import InspectionTests.Zipping
+
+inspectionTests :: TestTree
+inspectionTests =
+  testGroup "inspection"
+    [ accumulatingMapsInspectionTests
+    , basicInspectionTests
+    , extractingSublistsInspectionTests
+    , foldsInspectionTests
+    , indexingInspectionTests
+    , infiniteListsInspectionTests
+    , scansInspectionTests
+    , searchingByEqualityInspectionTests
+    , searchingWithPredicateInspectionTests
+    , specialFoldsInspectionTests
+    , sublistsWithPredicatesInspectionTests
+    , transformationsInspectionTests
+    , transformationsMapInspectionTests
+    , unfoldingInspectionTests
+    , zippingInspectionTests
+    ]

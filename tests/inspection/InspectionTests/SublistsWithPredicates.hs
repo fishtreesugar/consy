@@ -2,7 +2,7 @@
 {-# language NoImplicitPrelude #-}
 {-# language RankNTypes #-}
 {-# language TemplateHaskell #-}
-{-# options_ghc -O -fplugin Test.Inspection.Plugin #-}
+{-# options_ghc -O -fplugin Test.Tasty.Inspection.Plugin #-}
 module InspectionTests.SublistsWithPredicates where
 
 import Control.Applicative (ZipList(..))
@@ -24,7 +24,8 @@ import GHC.Enum (succ)
 import GHC.List (elem,errorEmptyList)
 import GHC.Num (Num, Integer, (+), (-))
 import GHC.Real (fromIntegral)
-import Test.Inspection
+import Test.Tasty (TestTree, testGroup)
+import Test.Tasty.Inspection
 
 import qualified Data.ByteString
 import qualified Data.ByteString.Char8
@@ -59,22 +60,18 @@ inspect ('consIsPrefixOfList === 'listIsPrefixOf)
 consIsPrefixOfText, textIsPrefixOf :: Text -> Text -> Bool
 consIsPrefixOfText = isPrefixOf
 textIsPrefixOf = Data.Text.isPrefixOf
-inspect ('consIsPrefixOfText === 'textIsPrefixOf)
 
 consIsPrefixOfLazyText, lazyTextIsPrefixOf :: Data.Text.Lazy.Text -> Data.Text.Lazy.Text -> Bool
 consIsPrefixOfLazyText = isPrefixOf
 lazyTextIsPrefixOf = Data.Text.Lazy.isPrefixOf
-inspect ('consIsPrefixOfLazyText === 'lazyTextIsPrefixOf)
 
 consIsPrefixOfBS, bsIsPrefixOf :: Data.ByteString.ByteString -> Data.ByteString.ByteString -> Bool
 consIsPrefixOfBS = isPrefixOf
 bsIsPrefixOf = Data.ByteString.isPrefixOf
-inspect ('consIsPrefixOfBS === 'bsIsPrefixOf)
 
 consIsPrefixOfLBS, lbsIsPrefixOf :: Data.ByteString.Lazy.ByteString -> Data.ByteString.Lazy.ByteString -> Bool
 consIsPrefixOfLBS = isPrefixOf
 lbsIsPrefixOf = Data.ByteString.Lazy.isPrefixOf
-inspect ('consIsPrefixOfLBS === 'lbsIsPrefixOf)
 
 
 {- isSuffixOf -}
@@ -110,22 +107,18 @@ show it is just as fast as the Data.List version
 consIsSuffixOfText, textIsSuffixOf :: Text -> Text -> Bool
 consIsSuffixOfText = isSuffixOf
 textIsSuffixOf = Data.Text.isSuffixOf
-inspect ('consIsSuffixOfText === 'textIsSuffixOf)
 
 consIsSuffixOfLazyText, lazyTextIsSuffixOf :: Data.Text.Lazy.Text -> Data.Text.Lazy.Text -> Bool
 consIsSuffixOfLazyText = isSuffixOf
 lazyTextIsSuffixOf = Data.Text.Lazy.isSuffixOf
-inspect ('consIsSuffixOfLazyText === 'lazyTextIsSuffixOf)
 
 consIsSuffixOfBS, bsIsSuffixOf :: Data.ByteString.ByteString -> Data.ByteString.ByteString -> Bool
 consIsSuffixOfBS = isSuffixOf
 bsIsSuffixOf = Data.ByteString.isSuffixOf
-inspect ('consIsSuffixOfBS === 'bsIsSuffixOf)
 
 consIsSuffixOfLBS, lbsIsSuffixOf :: Data.ByteString.Lazy.ByteString -> Data.ByteString.Lazy.ByteString -> Bool
 consIsSuffixOfLBS = isSuffixOf
 lbsIsSuffixOf = Data.ByteString.Lazy.isSuffixOf
-inspect ('consIsSuffixOfLBS === 'lbsIsSuffixOf)
 
 
 {- isInfixOf -}
@@ -143,17 +136,14 @@ inspect ('consIsInfixOfList === 'listIsInfixOf)
 consIsInfixOfText, textIsInfixOf :: Text -> Text -> Bool
 consIsInfixOfText = isInfixOf
 textIsInfixOf = Data.Text.isInfixOf
-inspect ('consIsInfixOfText === 'textIsInfixOf)
 
 consIsInfixOfLazyText, lazyTextIsInfixOf :: Data.Text.Lazy.Text -> Data.Text.Lazy.Text -> Bool
 consIsInfixOfLazyText = isInfixOf
 lazyTextIsInfixOf = Data.Text.Lazy.isInfixOf
-inspect ('consIsInfixOfLazyText === 'lazyTextIsInfixOf)
 
 consIsInfixOfBS, bsIsInfixOf :: Data.ByteString.ByteString -> Data.ByteString.ByteString -> Bool
 consIsInfixOfBS = isInfixOf
 bsIsInfixOf = Data.ByteString.isInfixOf
-inspect ('consIsInfixOfBS === 'bsIsInfixOf)
 
 
 {- isSubsequenceOf -}
@@ -169,3 +159,19 @@ implementations are slightly different but performance is the same
 
 inspect ('consIsSubsequenceOfList === 'listIsSubsequenceOf)
 -}
+
+sublistsWithPredicatesInspectionTests :: TestTree
+sublistsWithPredicatesInspectionTests =
+  testGroup "Sublists With Predicates"
+    [ $(inspectTest ('consIsPrefixOfText === 'textIsPrefixOf))
+    , $(inspectTest ('consIsPrefixOfLazyText === 'lazyTextIsPrefixOf))
+    , $(inspectTest ('consIsPrefixOfBS === 'bsIsPrefixOf))
+    , $(inspectTest ('consIsPrefixOfLBS === 'lbsIsPrefixOf))
+    , $(inspectTest ('consIsSuffixOfText === 'textIsSuffixOf))
+    , $(inspectTest ('consIsSuffixOfLazyText === 'lazyTextIsSuffixOf))
+    , $(inspectTest ('consIsSuffixOfBS === 'bsIsSuffixOf))
+    , $(inspectTest ('consIsSuffixOfLBS === 'lbsIsSuffixOf))
+    , $(inspectTest ('consIsInfixOfText === 'textIsInfixOf))
+    , $(inspectTest ('consIsInfixOfLazyText === 'lazyTextIsInfixOf))
+    , $(inspectTest ('consIsInfixOfBS === 'bsIsInfixOf))
+    ]

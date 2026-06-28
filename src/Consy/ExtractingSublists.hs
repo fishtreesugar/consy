@@ -38,6 +38,7 @@ import GHC.Real (Integral, fromIntegral)
 
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.ByteString as BS
+import qualified Data.List
 import qualified Data.Sequence
 import qualified Data.Text
 import qualified Data.Text.Lazy
@@ -126,6 +127,12 @@ takeFB c n x xs =
 "cons take seq eta"
     forall n xs.
     take @(Seq _) n xs = Data.Sequence.take n xs
+
+"cons take list"
+    take @[_] = Data.List.take
+"cons take list eta"
+    forall n xs.
+    take @[_] n xs = Data.List.take n xs
 #-}
 
 
@@ -186,6 +193,12 @@ unsafeDrop !m s =
 "cons drop seq eta" [~1]
     forall n xs.
     drop @(Seq _) n xs = Data.Sequence.drop n xs
+
+"cons drop list" [~1]
+    drop @[_] = Data.List.drop
+"cons drop list eta" [~1]
+    forall n xs.
+    drop @[_] n xs = Data.List.drop n xs
 #-}
 
 
@@ -303,6 +316,12 @@ takeWhileFB p c n = \x r -> if p x then x `c` r else n
 "cons takeWhile bslazy eta"
     forall p xs.
     takeWhile @LBS.ByteString p xs = LBS.takeWhile p xs
+
+"cons takeWhile list"
+    takeWhile @[_] = Data.List.takeWhile
+"cons takeWhile list eta"
+    forall p xs.
+    takeWhile @[_] p xs = Data.List.takeWhile p xs
 #-}
 
 
@@ -373,6 +392,12 @@ dropWhileEnd = \p ->
 "cons dropWhileEnd ltext eta"
     forall p xs.
     dropWhileEnd @Data.Text.Lazy.Text @Char p xs = Data.Text.Lazy.dropWhileEnd p xs
+
+"cons dropWhileEnd list"
+    dropWhileEnd @[_] = Data.List.dropWhileEnd
+"cons dropWhileEnd list eta"
+    forall p xs.
+    dropWhileEnd @[_] p xs = Data.List.dropWhileEnd p xs
 #-}
 
 
@@ -418,6 +443,12 @@ span = \p -> go p
 "cons span bslazy eta"
     forall p xs.
     span @LBS.ByteString p xs = LBS.span p xs
+
+"cons span list"
+    span @[_] = Data.List.span
+"cons span list eta"
+    forall p xs.
+    span @[_] p xs = Data.List.span p xs
 #-}
 
 
@@ -456,6 +487,12 @@ break p = span (not . p)
 "cons break bslazy eta"
     forall p xs.
     break @LBS.ByteString p xs = LBS.break p xs
+
+"cons break list"
+    break @[_] = Data.List.break
+"cons break list eta"
+    forall p xs.
+    break @[_] p xs = Data.List.break p xs
 #-}
 
 
@@ -484,6 +521,12 @@ stripPrefix = \s -> go s
 "cons stripPrefix ltext eta"
     forall xs ys.
     stripPrefix @Data.Text.Lazy.Text xs ys = Data.Text.Lazy.stripPrefix xs ys
+
+"cons stripPrefix list"
+    stripPrefix @[_] = Data.List.stripPrefix
+"cons stripPrefix list eta"
+    forall xs ys.
+    stripPrefix @[_] xs ys = Data.List.stripPrefix xs ys
 #-}
 
 
@@ -516,6 +559,12 @@ group = groupBy (==)
 "cons group bslazy eta"
     forall xs.
     group @LBS.ByteString xs = LBS.group xs
+
+"cons group list"
+    group @[_] = Data.List.group
+"cons group list eta"
+    forall xs.
+    group @[_] xs = Data.List.group xs
 #-}
 
 
@@ -554,6 +603,12 @@ groupBy = \p -> go p
 "cons groupBy bslazy eta"
     forall p xs.
     groupBy @LBS.ByteString p xs = LBS.groupBy p xs
+
+"cons groupBy list"
+    groupBy @[_] = Data.List.groupBy
+"cons groupBy list eta"
+    forall p xs.
+    groupBy @[_] p xs = Data.List.groupBy p xs
 #-}
 
 
@@ -639,4 +694,10 @@ tails lst =  build (\c n ->
 "cons tails seq eta"
     forall xs.
     tails @(Seq _) xs = Data.Sequence.tails xs
+
+"cons tails list"
+    tails @[_] = Data.List.tails
+"cons tails list eta"
+    forall xs.
+    tails @[_] xs = Data.List.tails xs
 #-}

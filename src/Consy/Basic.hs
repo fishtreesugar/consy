@@ -26,9 +26,11 @@ import Data.Vector (Vector)
 import GHC.List (errorEmptyList)
 import GHC.Num ((+))
 import GHC.Real (Integral, fromIntegral)
+import GHC.Stack (withFrozenCallStack)
 
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.ByteString as BS
+import qualified Data.List
 import qualified Data.Sequence
 import qualified Data.Text
 import qualified Data.Text.Lazy
@@ -90,6 +92,12 @@ append = go
 "cons append seq eta" [~2]
     forall a b.
     append @(Seq _) a b = (Data.Sequence.><) a b
+
+"cons append list" [~2]
+    append @[_] = (Data.List.++)
+"cons append list eta" [~2]
+    forall a b.
+    append @[_] a b = (Data.List.++) a b
 #-}
 
 
@@ -110,16 +118,16 @@ head = \s ->
     head (augment g xs) = g (\x _ -> x) (head xs)
 
 "cons head text" [~2]
-    head @Text = Data.Text.head
+    head @Text = withFrozenCallStack Data.Text.head
 "cons head text eta" [~2]
     forall a.
-    head @Text a = Data.Text.head a
+    head @Text a = withFrozenCallStack Data.Text.head a
 
 "cons head ltext" [~2]
-    head @Data.Text.Lazy.Text = Data.Text.Lazy.head
+    head @Data.Text.Lazy.Text = withFrozenCallStack Data.Text.Lazy.head
 "cons head ltext eta" [~2]
     forall a.
-    head @Data.Text.Lazy.Text a = Data.Text.Lazy.head a
+    head @Data.Text.Lazy.Text a = withFrozenCallStack Data.Text.Lazy.head a
 
 "cons head vector" [~2]
     head @(Vector _) = Data.Vector.head
@@ -128,37 +136,37 @@ head = \s ->
     head @(Vector _) a = Data.Vector.head a
 
 "cons head bs" [~2]
-    head @BS.ByteString = BS.head
+    head @BS.ByteString = withFrozenCallStack BS.head
 "cons head bs eta" [~2]
     forall a.
-    head @BS.ByteString a = BS.head a
+    head @BS.ByteString a = withFrozenCallStack BS.head a
 
 "cons head lbs" [~2]
-    head @LBS.ByteString = LBS.head
+    head @LBS.ByteString = withFrozenCallStack LBS.head
 "cons head lbs eta" [~2]
     forall a.
-    head @LBS.ByteString a = LBS.head a
+    head @LBS.ByteString a = withFrozenCallStack LBS.head a
 #-}
 
 
 {-# inline [1] last #-}
 -- last :: [a] -> a
 last :: (AsEmpty s, Cons s s a a) => s -> a
-last = \xs -> foldl (\_ x -> x) (errorEmptyList "last") xs
+last = \xs -> foldl (\_ x -> x) (withFrozenCallStack errorEmptyList "last") xs
 
 {-# rules
 "cons last text" [~2]
-    last @Text = Data.Text.last
+    last @Text = withFrozenCallStack Data.Text.last
 "cons last text eta" [~2]
     forall a.
     -- last @Data.Text.Text a = Data.Text.last a
-    last @Data.Text.Text a = Data.Text.foldl (\_ x -> x) (errorEmptyList "tail") a
+    last @Data.Text.Text a = Data.Text.foldl (\_ x -> x) (withFrozenCallStack errorEmptyList "tail") a
 
 "cons last ltext" [~2]
-    last @Data.Text.Lazy.Text = Data.Text.Lazy.last
+    last @Data.Text.Lazy.Text = withFrozenCallStack Data.Text.Lazy.last
 "cons last ltext eta" [~2]
     forall a.
-    last @Data.Text.Lazy.Text a = Data.Text.Lazy.last a
+    last @Data.Text.Lazy.Text a = withFrozenCallStack Data.Text.Lazy.last a
 
 "cons last vector" [~2]
     last @(Vector _) = Data.Vector.last
@@ -167,16 +175,16 @@ last = \xs -> foldl (\_ x -> x) (errorEmptyList "last") xs
     last @(Vector _) a = Data.Vector.last a
 
 "cons last bs" [~2]
-    last @BS.ByteString = BS.last
+    last @BS.ByteString = withFrozenCallStack BS.last
 "cons last bs eta" [~2]
     forall a.
-    last @BS.ByteString a = BS.last a
+    last @BS.ByteString a = withFrozenCallStack BS.last a
 
 "cons last lbs" [~2]
-    last @LBS.ByteString = LBS.last
+    last @LBS.ByteString = withFrozenCallStack LBS.last
 "cons last lbs eta" [~2]
     forall a.
-    last @LBS.ByteString a = LBS.last a
+    last @LBS.ByteString a = withFrozenCallStack LBS.last a
 #-}
 
 
@@ -185,21 +193,21 @@ last = \xs -> foldl (\_ x -> x) (errorEmptyList "last") xs
 tail :: (Cons s s a a) => s -> s
 tail = \s ->
   case uncons s of
-    Nothing -> errorEmptyList "tail"
+    Nothing -> withFrozenCallStack errorEmptyList "tail"
     Just (_, xs) -> xs
 
 {-# rules
 "cons tail text" [~2]
-    tail @Text = Data.Text.tail
+    tail @Text = withFrozenCallStack Data.Text.tail
 "cons tail text eta" [~2]
     forall a.
-    tail @Data.Text.Text a = Data.Text.tail a
+    tail @Data.Text.Text a = withFrozenCallStack Data.Text.tail a
 
 "cons tail ltext" [~2]
-    tail @Data.Text.Lazy.Text = Data.Text.Lazy.tail
+    tail @Data.Text.Lazy.Text = withFrozenCallStack Data.Text.Lazy.tail
 "cons tail ltext eta" [~2]
     forall a.
-    tail @Data.Text.Lazy.Text a = Data.Text.Lazy.tail a
+    tail @Data.Text.Lazy.Text a = withFrozenCallStack Data.Text.Lazy.tail a
 
 "cons tail vector" [~2]
     tail @(Vector _) = Data.Vector.tail
@@ -208,16 +216,16 @@ tail = \s ->
     tail @(Vector _) a = Data.Vector.tail a
 
 "cons tail bs" [~2]
-    tail @BS.ByteString = BS.tail
+    tail @BS.ByteString = withFrozenCallStack BS.tail
 "cons tail bs eta" [~2]
     forall a.
-    tail @BS.ByteString a = BS.tail a
+    tail @BS.ByteString a = withFrozenCallStack BS.tail a
 
 "cons tail lbs" [~2]
-    tail @LBS.ByteString = LBS.tail
+    tail @LBS.ByteString = withFrozenCallStack LBS.tail
 "cons tail lbs eta" [~2]
     forall a.
-    tail @LBS.ByteString a = LBS.tail a
+    tail @LBS.ByteString a = withFrozenCallStack LBS.tail a
 #-}
 
 
@@ -228,7 +236,7 @@ init = go
   where
     go s =
       case uncons s of
-        Nothing -> errorEmptyList "init"
+        Nothing -> withFrozenCallStack errorEmptyList "init"
         Just (x, xs) -> init' x xs
           where
             init' _ Empty = Empty
@@ -238,16 +246,16 @@ init = go
 
 {-# rules
 "cons init text" [~2]
-    init @Text = Data.Text.init
+    init @Text = withFrozenCallStack Data.Text.init
 "cons init text eta" [~2]
     forall a.
-    init @Data.Text.Text a = Data.Text.init a
+    init @Data.Text.Text a = withFrozenCallStack Data.Text.init a
 
 "cons init ltext" [~2]
-    init @Data.Text.Lazy.Text = Data.Text.Lazy.init
+    init @Data.Text.Lazy.Text = withFrozenCallStack Data.Text.Lazy.init
 "cons init ltext eta" [~2]
     forall a.
-    init @Data.Text.Lazy.Text a = Data.Text.Lazy.init a
+    init @Data.Text.Lazy.Text a = withFrozenCallStack Data.Text.Lazy.init a
 
 "cons init vector" [~2]
     init @(Vector _) = Data.Vector.init
@@ -256,16 +264,22 @@ init = go
     init @(Vector _) a = Data.Vector.init a
 
 "cons init bs" [~2]
-    init @BS.ByteString = BS.init
+    init @BS.ByteString = withFrozenCallStack BS.init
 "cons init bs eta" [~2]
     forall a.
-    init @BS.ByteString a = BS.init a
+    init @BS.ByteString a = withFrozenCallStack BS.init a
 
 "cons init lbs" [~2]
-    init @LBS.ByteString = LBS.init
+    init @LBS.ByteString = withFrozenCallStack LBS.init
 "cons init lbs eta" [~2]
     forall a.
-    init @LBS.ByteString a = LBS.init a
+    init @LBS.ByteString a = withFrozenCallStack LBS.init a
+
+"cons init list" [~2]
+    init @[_] = withFrozenCallStack Data.List.init
+"cons init list eta" [~2]
+    forall a.
+    init @[_] a = withFrozenCallStack Data.List.init a
 #-}
 
 

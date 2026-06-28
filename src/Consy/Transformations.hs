@@ -27,6 +27,7 @@ import GHC.Base (flip, id)
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.ByteString as BS
 import qualified Data.Functor
+import qualified Data.List
 import qualified Data.Sequence
 import qualified Data.Text
 import qualified Data.Text.Lazy as TL
@@ -77,6 +78,12 @@ reverse = foldl (flip cons) Empty
 "cons reverse seq eta" [~2]
     forall a.
     reverse @(Seq _) a = Data.Sequence.reverse a
+
+"cons reverse list" [~2]
+    reverse @[_] = Data.List.reverse
+"cons reverse list eta" [~2]
+    forall a.
+    reverse @[_] a = Data.List.reverse a
 #-}
 
 
@@ -117,6 +124,12 @@ intersperse = \sep s ->
 "cons intersperse lbs eta" [~2]
     forall a as.
     intersperse @LBS.ByteString a as= LBS.intersperse a as
+
+"cons intersperse list" [~2]
+    intersperse @[_] = Data.List.intersperse
+"cons intersperse list eta" [~2]
+    forall a as.
+    intersperse @[_] a as = Data.List.intersperse a as
 #-}
 
 
@@ -149,6 +162,12 @@ intercalate = \xs xss -> concat (intersperse xs xss)
 "cons intercalate lbs eta" [~2]
     forall xs xss.
     intercalate @LBS.ByteString xs xss= LBS.intercalate xs xss
+
+"cons intercalate list" [~2]
+    intercalate @[_] = Data.List.intercalate
+"cons intercalate list eta" [~2]
+    forall xs xss.
+    intercalate @[_] xs xss = Data.List.intercalate xs xss
 #-}
 
 
@@ -215,12 +234,26 @@ transpose = go
 "cons transpose lbs eta" [~2]
     forall xss.
     transpose @[LBS.ByteString] @[LBS.ByteString] xss = LBS.transpose xss
+
+"cons transpose list" [~2]
+    transpose @[[_]] @[[_]] = Data.List.transpose
+"cons transpose list eta" [~2]
+    forall xss.
+    transpose @[[_]] @[[_]] xss = Data.List.transpose xss
 #-}
 
 
 -- subsequences :: [a] -> [[a]]
 subsequences :: (AsEmpty s, Cons s s a a) => s -> [s]
 subsequences s = Empty : nonEmptySubsequences s
+
+{-# rules
+"cons subsequences list" [~2]
+    subsequences @[_] = Data.List.subsequences
+"cons subsequences list eta" [~2]
+    forall xs.
+    subsequences @[_] xs = Data.List.subsequences xs
+#-}
 
 
 -- nonEmptySubsequences :: [a] -> [[a]]
@@ -263,3 +296,11 @@ permutations = go
                         (us,zs) = interleave' (f . (y `cons`)) ys r
                       in
                         (y `cons` us, f (t `cons` y `cons` us) : zs)
+
+{-# rules
+"cons permutations list" [~2]
+    permutations @[_] = Data.List.permutations
+"cons permutations list eta" [~2]
+    forall xs.
+    permutations @[_] xs = Data.List.permutations xs
+#-}

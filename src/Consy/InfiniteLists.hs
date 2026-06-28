@@ -23,9 +23,11 @@ import Data.Word (Word8)
 import GHC.Base (seq)
 import GHC.List (errorEmptyList)
 import GHC.Real (fromIntegral)
+import GHC.Stack (withFrozenCallStack)
 
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.ByteString as BS
+import qualified Data.List
 import qualified Data.Sequence
 import qualified Data.Text
 import qualified Data.Text.Lazy
@@ -166,6 +168,11 @@ replicate = \n x -> take n (repeat x)
   replicate @LBS.ByteString = \n x -> LBS.replicate (fromIntegral n) x
 "cons replicate bslazy eta" [~2] forall n x.
   replicate @LBS.ByteString n x = LBS.replicate (fromIntegral n) x
+
+"cons replicate list" [~2]
+  replicate @[_] = Data.List.replicate
+"cons replicate list eta" [~2] forall n x.
+  replicate @[_] n x = Data.List.replicate n x
 #-}
 
 
@@ -174,19 +181,25 @@ replicate = \n x -> take n (repeat x)
 cycle :: (Cons s s a a) => s -> s
 cycle = \s ->
   case uncons s of
-    Nothing -> errorEmptyList "cycle"
+    Nothing -> withFrozenCallStack errorEmptyList "cycle"
     Just _ -> xs where xs = s `append` xs
 
 {-# rules
 "cons cycle ltext" [~2]
-    cycle @Data.Text.Lazy.Text = Data.Text.Lazy.cycle
+    cycle @Data.Text.Lazy.Text = withFrozenCallStack Data.Text.Lazy.cycle
 "cons cycle ltext eta" [~2]
     forall x.
-    cycle @Data.Text.Lazy.Text x = Data.Text.Lazy.cycle x
+    cycle @Data.Text.Lazy.Text x = withFrozenCallStack Data.Text.Lazy.cycle x
 
 "cons cycle bslazy" [~2]
-    cycle @LBS.ByteString = LBS.cycle
+    cycle @LBS.ByteString = withFrozenCallStack LBS.cycle
 "cons cycle bslazy eta" [~2]
     forall x.
-    cycle @LBS.ByteString x = LBS.cycle x
+    cycle @LBS.ByteString x = withFrozenCallStack LBS.cycle x
+
+"cons cycle list" [~2]
+    cycle @[_] = Data.List.cycle
+"cons cycle list eta" [~2]
+    forall x.
+    cycle @[_] x = Data.List.cycle x
 #-}
