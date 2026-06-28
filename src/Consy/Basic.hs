@@ -1,4 +1,5 @@
 {-# language BangPatterns #-}
+{-# language CPP #-}
 {-# language NoImplicitPrelude #-}
 {-# language TypeApplications #-}
 module Consy.Basic
@@ -9,22 +10,25 @@ module Consy.Basic
   , last
   , tail
   , init
+  , singleton
   , null
   , length
+  , compareLength
   )
 where
 
 import Control.Lens.Cons
 import Control.Lens.Empty
-import Data.Bool (Bool(..))
+import Data.Bool (Bool(..), otherwise)
 import Data.Int (Int)
 import Data.Function ((.), id)
 import Data.Maybe (Maybe(..))
+import Data.Ord (Ordering(..), compare, (<), (>))
 import Data.Sequence (Seq)
 import Data.Text (Text)
 import Data.Vector (Vector)
 import GHC.List (errorEmptyList)
-import GHC.Num ((+))
+import GHC.Num ((+), (-))
 import GHC.Real (Integral, fromIntegral)
 import GHC.Stack (withFrozenCallStack)
 
@@ -100,6 +104,55 @@ append = go
     append @[_] a b = (Data.List.++) a b
 #-}
 
+
+{-# inline [2] singleton #-}
+-- singleton :: a -> [a]
+singleton :: (AsEmpty s, Cons s s a a) => a -> s
+singleton x = x `cons` Empty
+
+{-# rules
+"cons singleton text" [~2]
+    singleton @Text = Data.Text.singleton
+"cons singleton text eta" [~2]
+    forall x.
+    singleton @Text x = Data.Text.singleton x
+
+"cons singleton ltext" [~2]
+    singleton @Data.Text.Lazy.Text = Data.Text.Lazy.singleton
+"cons singleton ltext eta" [~2]
+    forall x.
+    singleton @Data.Text.Lazy.Text x = Data.Text.Lazy.singleton x
+
+"cons singleton vector" [~2]
+    singleton @(Vector _) = Data.Vector.singleton
+"cons singleton vector eta" [~2]
+    forall x.
+    singleton @(Vector _) x = Data.Vector.singleton x
+
+"cons singleton bs" [~2]
+    singleton @BS.ByteString = BS.singleton
+"cons singleton bs eta" [~2]
+    forall x.
+    singleton @BS.ByteString x = BS.singleton x
+
+"cons singleton lbs" [~2]
+    singleton @LBS.ByteString = LBS.singleton
+"cons singleton lbs eta" [~2]
+    forall x.
+    singleton @LBS.ByteString x = LBS.singleton x
+
+"cons singleton seq" [~2]
+    singleton @(Seq _) = Data.Sequence.singleton
+"cons singleton seq eta" [~2]
+    forall x.
+    singleton @(Seq _) x = Data.Sequence.singleton x
+
+"cons singleton list" [~2]
+    singleton @[_] = Data.List.singleton
+"cons singleton list eta" [~2]
+    forall x.
+    singleton @[_] x = Data.List.singleton x
+#-}
 
 {-# noinline [1] head #-}
 -- head :: [a] -> a
@@ -282,7 +335,6 @@ init = go
     init @[_] a = withFrozenCallStack Data.List.init a
 #-}
 
-
 {-# inline [2] null #-}
 -- null :: [a] -> Bool
 null :: (AsEmpty s, Cons s s a a) => s -> Bool
@@ -400,3 +452,64 @@ lengthFB _ r = \ !a -> r (a + 1)
 -- idLength :: Int -> Int
 idLength :: Int -> Int
 idLength = id
+
+
+{-# inline [2] compareLength #-}
+-- compareLength :: [a] -> Int -> Ordering
+compareLength :: Cons s s a a => s -> Int -> Ordering
+compareLength xs n
+  | n < 0 = GT
+  | otherwise =
+      foldr
+        (\_ f m -> if m > 0 then f (m - 1) else GT)
+        (\m -> if m > 0 then LT else EQ)
+        xs
+        n
+
+{-# rules
+"cons compareLength text" [~2]
+    compareLength @Text = Data.Text.compareLength
+"cons compareLength text eta" [~2]
+    forall xs n.
+    compareLength @Text xs n = Data.Text.compareLength xs n
+
+"cons compareLength ltext" [~2]
+    compareLength @Data.Text.Lazy.Text = \xs n -> Data.Text.Lazy.compareLength xs (fromIntegral n)
+"cons compareLength ltext eta" [~2]
+    forall xs n.
+    compareLength @Data.Text.Lazy.Text xs n = Data.Text.Lazy.compareLength xs (fromIntegral n)
+
+"cons compareLength vector" [~2]
+    compareLength @(Vector _) = \xs n -> compare (Data.Vector.length xs) n
+"cons compareLength vector eta" [~2]
+    forall xs n.
+    compareLength @(Vector _) xs n = compare (Data.Vector.length xs) n
+
+"cons compareLength bs" [~2]
+    compareLength @BS.ByteString = \xs n -> compare (BS.length xs) n
+"cons compareLength bs eta" [~2]
+    forall xs n.
+    compareLength @BS.ByteString xs n = compare (BS.length xs) n
+
+"cons compareLength lbs" [~2]
+    compareLength @LBS.ByteString = \xs n -> compare (LBS.length xs) (fromIntegral n)
+"cons compareLength lbs eta" [~2]
+    forall xs n.
+    compareLength @LBS.ByteString xs n = compare (LBS.length xs) (fromIntegral n)
+
+"cons compareLength seq" [~2]
+    compareLength @(Seq _) = \xs n -> compare (Data.Sequence.length xs) n
+"cons compareLength seq eta" [~2]
+    forall xs n.
+    compareLength @(Seq _) xs n = compare (Data.Sequence.length xs) n
+#-}
+
+#if MIN_VERSION_base(4,21,0)
+{-# rules
+"cons compareLength list" [~2]
+    compareLength @[_] = Data.List.compareLength
+"cons compareLength list eta" [~2]
+    forall xs n.
+    compareLength @[_] xs n = Data.List.compareLength xs n
+#-}
+#endif
