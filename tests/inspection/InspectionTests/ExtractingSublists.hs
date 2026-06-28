@@ -46,14 +46,7 @@ import Consy
 {- take -}
 consTakeList, listTake :: Int -> [a] -> [a]
 consTakeList = take
-listTake = go
-  where
-    go !n s
-      | 0 < n =
-          case s of
-            [] -> []
-            (x : xs) -> x : go (n-1) xs
-      | otherwise = []
+listTake = Data.List.take
 
 consTakeText, textTake :: Int -> Text -> Text
 consTakeText = take
@@ -89,18 +82,7 @@ seqTake = Data.Sequence.take
 
 consMapTakeList, listMapTake :: (a -> a) -> Int -> [a] -> [a]
 consMapTakeList f n = map f . take n
-listMapTake f !n s
-  | 0 < n = go s n
-  | otherwise = []
-  where
-    go s !n =
-      case s of
-        [] -> []
-        (x : xs) ->
-          case n of
-            1 -> [f x]
-            -- It's flipped because of the take + unsafeTakeList rules
-            _ -> f x : go xs (n-1)
+listMapTake f n = Data.List.map f . Data.List.take n
 
 consTakeZipList, zipListTake :: Int -> ZipList a -> ZipList a
 consTakeZipList n = take n
@@ -110,14 +92,7 @@ zipListTake n = ZipList . listTake n . getZipList
 {- drop -}
 consDropList, listDrop :: Int -> [a] -> [a]
 consDropList = drop
-listDrop = go
-  where
-    go !n s
-      | 0 < n =
-          case s of
-            [] -> []
-            (x : xs) -> go (n-1) xs
-      | otherwise = []
+listDrop = Data.List.drop
 
 consDropText, textDrop :: Int -> Text -> Text
 consDropText = drop
@@ -210,14 +185,7 @@ seqSplitAt = Data.Sequence.splitAt
 {- takeWhile -}
 consTakeWhileList, listTakeWhile :: (a -> Bool) -> [a] -> [a]
 consTakeWhileList = takeWhile
-listTakeWhile p = go p
-  where
-    go p s =
-      case s of
-        [] -> []
-        (x : xs) -> if p x
-                    then x : (go p xs)
-                    else []
+listTakeWhile = Data.List.takeWhile
 
 consTakeWhileText, textTakeWhile :: (Char -> Bool) -> Text -> Text
 consTakeWhileText = takeWhile
@@ -284,14 +252,7 @@ lbsDropWhile = Data.ByteString.Lazy.dropWhile
 {- dropWhileEnd -}
 consDropWhileEndList, listDropWhileEnd :: (a -> Bool) -> [a] -> [a]
 consDropWhileEndList = dropWhileEnd
-listDropWhileEnd p = go p
-  where
-    go p =
-      foldr
-        (\x xs -> if p x && null xs
-                  then []
-                  else x : xs)
-        []
+listDropWhileEnd = Data.List.dropWhileEnd
 
 consDropWhileEndText, textDropWhileEnd :: (Char -> Bool) -> Text -> Text
 consDropWhileEndText = dropWhileEnd
@@ -309,14 +270,7 @@ lazyTextDropWhileEnd = Data.Text.Lazy.dropWhileEnd
 {- span -}
 consSpanList, listSpan :: (a -> Bool) -> [a] -> ([a], [a])
 consSpanList = span
-listSpan p = \s -> go p s
-  where
-    go p s =
-      case s of
-        [] -> ([], [])
-        (x : xs) -> if p x
-                    then let (ys,zs) = listSpan p xs in (x:ys,zs)
-                    else ([], s)
+listSpan = Data.List.span
 
 consSpanText, textSpan :: (Char -> Bool) -> Text -> (Text, Text)
 consSpanText = span
@@ -346,7 +300,7 @@ lbsSpan = Data.ByteString.Lazy.span
 {- break -}
 consBreakList, listBreak :: (a -> Bool) -> [a] -> ([a], [a])
 consBreakList = break
-listBreak = \p -> listSpan (not . p)
+listBreak = Data.List.break
 
 consBreakText, textBreak :: (Char -> Bool) -> Text -> (Text, Text)
 consBreakText = break
@@ -376,15 +330,7 @@ lbsBreak = Data.ByteString.Lazy.break
 {- stripPrefix -}
 consStripPrefixList, listStripPrefix :: Eq a => [a] -> [a] -> Maybe [a]
 consStripPrefixList = stripPrefix
-listStripPrefix = \xss -> go xss
-  where
-    go xss yss =
-      case xss of
-        [] -> Just yss
-        (x:xs)
-          | (y:ys) <- yss
-          , x == y -> go xs ys
-        _ -> Nothing
+listStripPrefix = Data.List.stripPrefix
 
 consStripPrefixText, textStripPrefix :: Text -> Text -> Maybe Text
 consStripPrefixText = stripPrefix
@@ -397,13 +343,7 @@ lazyTextStripPrefix = Data.Text.Lazy.stripPrefix
 {- groupBy -}
 consGroupByList, listGroupBy :: (a -> a -> Bool) -> [a] -> [[a]]
 consGroupByList = groupBy
-listGroupBy p = \s -> go p s
-  where
-    go p s =
-      case s of
-        [] -> []
-        (x:xs) -> (x:ys) : go p zs
-                    where (ys,zs) = listSpan (p x) xs
+listGroupBy = Data.List.groupBy
 
 consGroupByText, textGroupBy :: (Char -> Char -> Bool) -> Text -> [Text]
 consGroupByText = groupBy
@@ -428,7 +368,7 @@ lbsGroupBy = Data.ByteString.Lazy.groupBy
 {- group -}
 consGroupList, listGroup :: Eq a => [a] -> [[a]]
 consGroupList = group
-listGroup = listGroupBy (==)
+listGroup = Data.List.group
 
 consGroupText, textGroup :: Text -> [Text]
 consGroupText = group
@@ -487,11 +427,7 @@ seqInits = Data.Sequence.inits
 {- tails -}
 consTailsList, listTails :: [a] -> [[a]]
 consTailsList = tails
-listTails lst =  build (\c n ->
-  let tailsGo xs = xs `c` case xs of
-                            [] -> n
-                            (_ : xs') -> tailsGo xs'
-  in tailsGo lst)
+listTails = Data.List.tails
 
 consTailsText, textTails :: Text -> [Text]
 consTailsText = tails
@@ -525,8 +461,8 @@ extractingSublistsInspectionTests =
     , $(inspectTest ('consTakeBS === 'bsTake))
     , $(inspectTest ('consTakeLBS === 'lbsTake))
     , $(inspectTest ('consTakeSeq === 'seqTake))
-    , $(inspectTest ('consMapTakeList === 'listMapTake))
-    , $(inspectTest ('consTakeZipList ==- 'zipListTake))
+    , $(inspectTest (coreOf 'consMapTakeList))
+    , $(inspectTest (coreOf 'consTakeZipList))
     , $(inspectTest ('consDropList === 'listDrop))
     , $(inspectTest ('consDropText === 'textDrop))
     , $(inspectTest ('consDropText' === 'textDrop'))

@@ -23,6 +23,7 @@ import GHC.Enum (succ)
 import GHC.List (errorEmptyList)
 import GHC.Num (Num, (+), (-), (*))
 import GHC.Real (fromIntegral)
+import GHC.Stack (withFrozenCallStack)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.Inspection
 
@@ -208,16 +209,15 @@ seqProduct = Data.Foldable.product
 {- maximum -}
 consMaximum, listMaximum :: (Ord a) => [a] -> a
 consMaximum = maximum
-listMaximum [] = errorEmptyList "maximum"
-listMaximum xs = foldl1 max xs
+listMaximum = withFrozenCallStack Data.List.maximum
 
 consMaximumText, textMaximum :: Text -> Char
 consMaximumText = maximum
-textMaximum = Data.Text.maximum
+textMaximum = withFrozenCallStack Data.Text.maximum
 
 consMaximumLazyText, lazyTextMaximum :: Data.Text.Lazy.Text -> Char
 consMaximumLazyText = maximum
-lazyTextMaximum = Data.Text.Lazy.maximum
+lazyTextMaximum = withFrozenCallStack Data.Text.Lazy.maximum
 
 consMaximumVector, vectorMaximum :: (Ord a) => Vector a -> a
 consMaximumVector = maximum
@@ -225,11 +225,11 @@ vectorMaximum = Data.Vector.maximum
 
 consMaximumBS, bsMaximum :: Data.ByteString.ByteString -> Word8
 consMaximumBS = maximum
-bsMaximum = Data.ByteString.maximum
+bsMaximum = withFrozenCallStack Data.ByteString.maximum
 
 consMaximumLBS, lbsMaximum :: Data.ByteString.Lazy.ByteString -> Word8
 consMaximumLBS = maximum
-lbsMaximum = Data.ByteString.Lazy.maximum
+lbsMaximum = withFrozenCallStack Data.ByteString.Lazy.maximum
 
 consMaximumSeq, seqMaximum :: (Ord a) => Data.Sequence.Seq a -> a
 consMaximumSeq = maximum
@@ -239,16 +239,15 @@ seqMaximum = Data.Foldable.maximum
 {- minimum -}
 consMinimum, listMinimum :: (Ord a) => [a] -> a
 consMinimum = minimum
-listMinimum [] = errorEmptyList "minimum"
-listMinimum s = foldl1 min s
+listMinimum = withFrozenCallStack Data.List.minimum
 
 consMinimumText, textMinimum :: Text -> Char
 consMinimumText = minimum
-textMinimum = Data.Text.minimum
+textMinimum = withFrozenCallStack Data.Text.minimum
 
 consMinimumLazyText, lazyTextMinimum :: Data.Text.Lazy.Text -> Char
 consMinimumLazyText = minimum
-lazyTextMinimum = Data.Text.Lazy.minimum
+lazyTextMinimum = withFrozenCallStack Data.Text.Lazy.minimum
 
 consMinimumVector, vectorMinimum :: (Ord a) => Vector a -> a
 consMinimumVector = minimum
@@ -256,11 +255,11 @@ vectorMinimum = Data.Vector.minimum
 
 consMinimumBS, bsMinimum :: Data.ByteString.ByteString -> Word8
 consMinimumBS = minimum
-bsMinimum = Data.ByteString.minimum
+bsMinimum = withFrozenCallStack Data.ByteString.minimum
 
 consMinimumLBS, lbsMinimum :: Data.ByteString.Lazy.ByteString -> Word8
 consMinimumLBS = minimum
-lbsMinimum = Data.ByteString.Lazy.minimum
+lbsMinimum = withFrozenCallStack Data.ByteString.Lazy.minimum
 
 consMinimumSeq, seqMinimum :: (Ord a) => Data.Sequence.Seq a -> a
 consMinimumSeq = minimum
@@ -307,14 +306,14 @@ specialFoldsInspectionTests =
     , $(inspectTest ('consMaximumText === 'textMaximum))
     , $(inspectTest ('consMaximumLazyText === 'lazyTextMaximum))
     , $(inspectTest ('consMaximumVector === 'vectorMaximum))
-    , $(inspectTest ('consMaximumBS === 'bsMaximum))
-    , $(inspectTest ('consMaximumLBS === 'lbsMaximum))
+    , $(inspectTest (coreOf 'consMaximumBS))
+    , $(inspectTest (coreOf 'consMaximumLBS))
     , $(inspectTest ('consMaximumSeq === 'seqMaximum))
     , $(inspectTest ('consMinimum === 'listMinimum))
     , $(inspectTest ('consMinimumText === 'textMinimum))
     , $(inspectTest ('consMinimumLazyText === 'lazyTextMinimum))
     , $(inspectTest ('consMinimumVector === 'vectorMinimum))
-    , $(inspectTest ('consMinimumBS === 'bsMinimum))
-    , $(inspectTest ('consMinimumLBS === 'lbsMinimum))
+    , $(inspectTest (coreOf 'consMinimumBS))
+    , $(inspectTest (coreOf 'consMinimumLBS))
     , $(inspectTest ('consMinimumSeq === 'seqMinimum))
     ]

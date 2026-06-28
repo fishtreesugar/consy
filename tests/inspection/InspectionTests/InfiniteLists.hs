@@ -23,6 +23,7 @@ import GHC.Enum (succ)
 import GHC.List (errorEmptyList, (++))
 import GHC.Num (Num, Integer, (+), (-))
 import GHC.Real (fromIntegral)
+import GHC.Stack (withFrozenCallStack)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.Inspection
 
@@ -110,12 +111,7 @@ lbsRepeat = Data.ByteString.Lazy.repeat
 {- replicate -}
 consReplicate, listReplicate :: Int -> a -> [a]
 consReplicate = replicate
-listReplicate n a
-  | 0 < n = go n
-  | otherwise = []
-  where
-    go 1 = [a]
-    go n = a : go (n-1)
+listReplicate = Data.List.replicate
 
 consReplicate1, listReplicate1 :: [Char]
 consReplicate1 = replicate 100 'a'
@@ -138,17 +134,15 @@ textReplicate n = Data.Text.replicate n . Data.Text.singleton
 consCycle, listCycle :: [a] -> [a]
 consCycle = cycle
 listCycle = \as ->
-  case as of
-    [] -> errorEmptyList "cycle"
-    _  -> as' where as' = append as as'
+  withFrozenCallStack Data.List.cycle as
 
 consCycleLazyText, lazyTextCycle :: Data.Text.Lazy.Text -> Data.Text.Lazy.Text
 consCycleLazyText = cycle
-lazyTextCycle = Data.Text.Lazy.cycle
+lazyTextCycle = withFrozenCallStack Data.Text.Lazy.cycle
 
 consCycleLBS, lbsCycle :: Data.ByteString.Lazy.ByteString -> Data.ByteString.Lazy.ByteString
 consCycleLBS = cycle
-lbsCycle = Data.ByteString.Lazy.cycle
+lbsCycle = withFrozenCallStack Data.ByteString.Lazy.cycle
 
 infiniteListsInspectionTests :: TestTree
 infiniteListsInspectionTests =
@@ -165,10 +159,10 @@ infiniteListsInspectionTests =
     , $(inspectTest ('consRepeatLBS === 'lbsRepeat))
     , $(inspectTest ('consReplicate === 'listReplicate))
     , $(inspectTest ('consReplicate1 === 'listReplicate1))
-    , $(inspectTest ('consReplicateMap === 'listReplicateMap))
-    , $(inspectTest ('consReplicateMap' === 'listReplicateMap'))
+    , $(inspectTest (coreOf 'consReplicateMap'))
+    , $(inspectTest (coreOf 'consReplicateMap'))
     , $(inspectTest ('consReplicateText === 'textReplicate))
-    , $(inspectTest ('consCycle === 'listCycle))
+    , $(inspectTest (coreOf 'consCycle))
     , $(inspectTest ('consCycleLazyText === 'lazyTextCycle))
     , $(inspectTest ('consCycleLBS === 'lbsCycle))
     ]

@@ -92,8 +92,7 @@ vectorLazyScanl' = Data.Vector.scanl'
 {- scanl1 -}
 consScanl1List, listScanl1 :: (a -> a -> a) -> [a] -> [a]
 consScanl1List = scanl1
-listScanl1 f (x:xs) = scanl f x xs
-listScanl1 _ [] = []
+listScanl1 = Data.List.scanl1
 
 consScanl1Text, textScanl1
   :: (Char -> Char -> Char) -> Data.Text.Text -> Data.Text.Text

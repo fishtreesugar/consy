@@ -23,6 +23,7 @@ import GHC.Enum (succ)
 import GHC.List (errorEmptyList)
 import GHC.Num (Num, Integer, (+), (-))
 import GHC.Real (fromIntegral)
+import GHC.Stack (withFrozenCallStack)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.Inspection
 
@@ -46,8 +47,7 @@ import Consy
 {- append -}
 consListAppend, listAppend :: [a] -> [a] -> [a]
 consListAppend = append
-listAppend [] ys = ys
-listAppend (x:xs) ys = x : listAppend xs ys
+listAppend = (Data.List.++)
 
 consAppendText, textAppend :: Text -> Text -> Text
 consAppendText = append
@@ -87,11 +87,11 @@ inspect ('consListHead === 'listHead)
 
 consHeadText, textHead :: Text -> Char
 consHeadText = head
-textHead = Data.Text.head
+textHead = withFrozenCallStack Data.Text.head
 
 consHeadLazyText, lazyTextHead :: Data.Text.Lazy.Text -> Char
 consHeadLazyText = head
-lazyTextHead = Data.Text.Lazy.head
+lazyTextHead = withFrozenCallStack Data.Text.Lazy.head
 
 consHeadVector, vectorHead :: Vector a -> a
 consHeadVector = head
@@ -99,27 +99,27 @@ vectorHead = Data.Vector.head
 
 consHeadBS, bsHead :: Data.ByteString.ByteString -> Data.Word.Word8
 consHeadBS = head
-bsHead = Data.ByteString.head
+bsHead = withFrozenCallStack Data.ByteString.head
 
 consHeadLBS, lbsHead :: Data.ByteString.Lazy.ByteString -> Data.Word.Word8
 consHeadLBS = head
-lbsHead = Data.ByteString.Lazy.head
+lbsHead = withFrozenCallStack Data.ByteString.Lazy.head
 
 
 {- last -}
 consLastList, listLast :: [a] -> a
 consLastList = last
-listLast xs = Data.List.foldl (\_ x -> x) (errorEmptyList "last") xs
+listLast xs = Data.List.foldl (\_ x -> x) (withFrozenCallStack errorEmptyList "last") xs
 
 consLastText, consFoldrLast, textFoldrLast, textLast :: Text -> Char
 consLastText = last
-textLast = Data.Text.last
-consFoldrLast = foldr (\_ x-> x) (errorEmptyList "tail")
-textFoldrLast = Data.Text.foldr (\_ x -> x) (errorEmptyList "tail")
+textLast = withFrozenCallStack Data.Text.last
+consFoldrLast = foldr (\_ x-> x) (withFrozenCallStack errorEmptyList "tail")
+textFoldrLast = Data.Text.foldr (\_ x -> x) (withFrozenCallStack errorEmptyList "tail")
 
 consLastLazyText, lazyTextLast :: Data.Text.Lazy.Text -> Char
 consLastLazyText = last
-lazyTextLast = Data.Text.Lazy.last
+lazyTextLast = withFrozenCallStack Data.Text.Lazy.last
 
 consLastVector, vectorLast :: Vector a -> a
 consLastVector = last
@@ -127,26 +127,26 @@ vectorLast = Data.Vector.last
 
 consLastBS, bsLast :: Data.ByteString.ByteString -> Data.Word.Word8
 consLastBS = last
-bsLast = Data.ByteString.last
+bsLast = withFrozenCallStack Data.ByteString.last
 
 consLastLBS, lbsLast :: Data.ByteString.Lazy.ByteString -> Data.Word.Word8
 consLastLBS = last
-lbsLast = Data.ByteString.Lazy.last
+lbsLast = withFrozenCallStack Data.ByteString.Lazy.last
 
 
 {- tail -}
 consTailList, listTail :: [a] -> [a]
 consTailList = tail
 listTail (_:xs) = xs
-listTail [] = errorEmptyList "tail"
+listTail [] = withFrozenCallStack errorEmptyList "tail"
 
 consTailText, textTail :: Text -> Text
 consTailText = tail
-textTail = Data.Text.tail
+textTail = withFrozenCallStack Data.Text.tail
 
 consTailLazyText, lazyTextTail :: Data.Text.Lazy.Text -> Data.Text.Lazy.Text
 consTailLazyText = tail
-lazyTextTail = Data.Text.Lazy.tail
+lazyTextTail = withFrozenCallStack Data.Text.Lazy.tail
 
 consTailVector, vectorTail :: Vector a -> Vector a
 consTailVector = tail
@@ -154,32 +154,25 @@ vectorTail = Data.Vector.tail
 
 consTailBS, bsTail :: Data.ByteString.ByteString -> Data.ByteString.ByteString
 consTailBS = tail
-bsTail = Data.ByteString.tail
+bsTail = withFrozenCallStack Data.ByteString.tail
 
 consTailLBS, lbsTail :: Data.ByteString.Lazy.ByteString -> Data.ByteString.Lazy.ByteString
 consTailLBS = tail
-lbsTail = Data.ByteString.Lazy.tail
+lbsTail = withFrozenCallStack Data.ByteString.Lazy.tail
 
 
 {- init -}
 consListInit, listInit :: [a] -> [a]
 consListInit = init
-listInit = go
-  where
-    go s =
-      case s of
-        [] -> errorEmptyList "init"
-        x : xs -> init' x xs
-          where init' _ []     = []
-                init' y (z:zs) = y : init' z zs
+listInit = withFrozenCallStack Data.List.init
 
 consInitText, textInit :: Text -> Text
 consInitText = init
-textInit = Data.Text.init
+textInit = withFrozenCallStack Data.Text.init
 
 consInitLazyText, lazyTextInit :: Data.Text.Lazy.Text -> Data.Text.Lazy.Text
 consInitLazyText = init
-lazyTextInit = Data.Text.Lazy.init
+lazyTextInit = withFrozenCallStack Data.Text.Lazy.init
 
 consInitVector, vectorInit :: Vector a -> Vector a
 consInitVector = init
@@ -187,11 +180,11 @@ vectorInit = Data.Vector.init
 
 consInitBS, bsInit :: Data.ByteString.ByteString -> Data.ByteString.ByteString
 consInitBS = init
-bsInit = Data.ByteString.init
+bsInit = withFrozenCallStack Data.ByteString.init
 
 consInitLBS, lbsInit :: Data.ByteString.Lazy.ByteString -> Data.ByteString.Lazy.ByteString
 consInitLBS = init
-lbsInit = Data.ByteString.Lazy.init
+lbsInit = withFrozenCallStack Data.ByteString.Lazy.init
 
 
 {- null -}

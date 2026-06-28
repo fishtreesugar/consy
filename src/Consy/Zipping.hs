@@ -36,6 +36,7 @@ import Data.Word (Word8)
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as LBS
+import qualified Data.List
 import qualified Data.Sequence
 import qualified Data.Text
 import qualified Data.Text.Lazy
@@ -135,6 +136,12 @@ zipFB c = \x y r -> (x,y) `c` r
 "cons zip seq eta" [~2]
     forall a b.
     zip @(Seq _) @_ @(Seq _) @_ a b = Data.Sequence.zip a b
+
+"cons zip list" [~2]
+    zip @[_] @_ @[_] @_ = Data.List.zip
+"cons zip list eta" [~2]
+    forall a b.
+    zip @[_] @_ @[_] @_ a b = Data.List.zip a b
 #-}
 
 
@@ -172,6 +179,12 @@ zip3 = go
 "cons zip3 seq eta" [~2]
     forall a b c.
     zip3 @(Seq _) @_ @(Seq _) @_ @(Seq _) @_ a b c = Data.Sequence.zip3 a b c
+
+"cons zip3 list" [~2]
+    zip3 @[_] @_ @[_] @_ @[_] @_ = Data.List.zip3
+"cons zip3 list eta" [~2]
+    forall a b c.
+    zip3 @[_] @_ @[_] @_ @[_] @_ a b c = Data.List.zip3 a b c
 #-}
 
 
@@ -213,6 +226,12 @@ zip4 = go
 "cons zip4 seq eta" [~2]
     forall a b c d.
     zip4 @(Seq _) @_ @(Seq _) @_ @(Seq _) @_ @(Seq _) @_ a b c d = Data.Sequence.zip4 a b c d
+
+"cons zip4 list" [~2]
+    zip4 @[_] @_ @[_] @_ @[_] @_ @[_] @_ = Data.List.zip4
+"cons zip4 list eta" [~2]
+    forall a b c d.
+    zip4 @[_] @_ @[_] @_ @[_] @_ @[_] @_ a b c d = Data.List.zip4 a b c d
 #-}
 
 
@@ -252,6 +271,12 @@ zip5 = go
 "cons zip5 vector eta" [~2]
     forall a b c d e.
     zip5 @(Vector _) @_ @(Vector _) @_ @(Vector _) @_ @(Vector _) @_ @(Vector _) @_ a b c d e = Data.Vector.zip5 a b c d e
+
+"cons zip5 list" [~2]
+    zip5 @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ = Data.List.zip5
+"cons zip5 list eta" [~2]
+    forall a b c d e.
+    zip5 @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ a b c d e = Data.List.zip5 a b c d e
 #-}
 
 
@@ -295,6 +320,12 @@ zip6 = go
 "cons zip6 vector eta" [~2]
     forall a b c d e f.
     zip6 @(Vector _) @_ @(Vector _) @_ @(Vector _) @_ @(Vector _) @_ @(Vector _) @_ @(Vector _) @_ a b c d e f = Data.Vector.zip6 a b c d e f
+
+"cons zip6 list" [~2]
+    zip6 @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ = Data.List.zip6
+"cons zip6 list eta" [~2]
+    forall a b c d e f.
+    zip6 @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ a b c d e f = Data.List.zip6 a b c d e f
 #-}
 
 
@@ -335,6 +366,14 @@ zip7 = go
                               case uncons y of
                                 Nothing -> Empty
                                 Just (g, gs) -> ((,,,,,,) a b c d e f g) `cons` go as bs cs ds es fs gs
+
+{-# rules
+"cons zip7 list" [~2]
+    zip7 @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ = Data.List.zip7
+"cons zip7 list eta" [~2]
+    forall a b c d e f g.
+    zip7 @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ a b c d e f g = Data.List.zip7 a b c d e f g
+#-}
 
 
 {-# inline [1] zipWith #-}
@@ -415,6 +454,12 @@ zipWithFB c f = \x y r -> (x `f` y) `c` r
     forall f a b.
     zipWith @(Seq _) @_ @(Seq _) @_ @(Seq _) @_ f a b =
       Data.Sequence.zipWith f a b
+
+"cons zipWith list" [~2]
+    zipWith @[_] @_ @[_] @_ @[_] @_ = Data.List.zipWith
+"cons zipWith list eta" [~2]
+    forall f a b.
+    zipWith @[_] @_ @[_] @_ @[_] @_ f a b = Data.List.zipWith f a b
 #-}
 
 
@@ -456,6 +501,13 @@ zipWith3 f = go
     forall f a b c.
     zipWith3 @(Seq _) @_ @(Seq _) @_ @(Seq _) @_ f a b c =
       Data.Sequence.zipWith3 f a b c
+
+"cons zipWith3 list" [~2]
+    zipWith3 @[_] @_ @[_] @_ @[_] @_ @[_] @_ = Data.List.zipWith3
+"cons zipWith3 list eta" [~2]
+    forall f a b c.
+    zipWith3 @[_] @_ @[_] @_ @[_] @_ @[_] @_ f a b c =
+      Data.List.zipWith3 f a b c
 #-}
 
 
@@ -501,6 +553,13 @@ zipWith4 f = go
     forall f a b c d.
     zipWith4 @(Seq _) @_ @(Seq _) @_ @(Seq _) @_ @(Seq _) @_ f a b c d =
       Data.Sequence.zipWith4 f a b c d
+
+"cons zipWith4 list" [~2]
+    zipWith4 @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ = Data.List.zipWith4
+"cons zipWith4 list eta" [~2]
+    forall f a b c d.
+    zipWith4 @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ f a b c d =
+      Data.List.zipWith4 f a b c d
 #-}
 
 
@@ -542,6 +601,13 @@ zipWith5 ff = go
     forall ff a b c d e.
     zipWith5 @(Vector _) @_ @(Vector _) @_ @(Vector _) @_ @(Vector _) @_ @(Vector _) @_ ff a b c d e =
       Data.Vector.zipWith5 ff a b c d e
+
+"cons zipWith5 list" [~2]
+    zipWith5 @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ = Data.List.zipWith5
+"cons zipWith5 list eta" [~2]
+    forall ff a b c d e.
+    zipWith5 @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ ff a b c d e =
+      Data.List.zipWith5 ff a b c d e
 #-}
 
 
@@ -587,6 +653,13 @@ zipWith6 ff = go
     forall ff a b c d e f.
     zipWith6 @(Vector _) @_ @(Vector _) @_ @(Vector _) @_ @(Vector _) @_ @(Vector _) @_ @(Vector _) @_ ff a b c d e f =
       Data.Vector.zipWith6 ff a b c d e f
+
+"cons zipWith6 list" [~2]
+    zipWith6 @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ = Data.List.zipWith6
+"cons zipWith6 list eta" [~2]
+    forall ff a b c d e f.
+    zipWith6 @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ ff a b c d e f =
+      Data.List.zipWith6 ff a b c d e f
 #-}
 
 
@@ -627,6 +700,15 @@ zipWith7 ff = go
                               case uncons zz of
                                 Nothing -> Empty
                                 Just (g, gs) -> ff a b c d e f g `cons` go as bs cs ds es fs gs
+
+{-# rules
+"cons zipWith7 list" [~2]
+    zipWith7 @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ = Data.List.zipWith7
+"cons zipWith7 list eta" [~2]
+    forall ff a b c d e f g.
+    zipWith7 @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ @[_] @_ ff a b c d e f g =
+      Data.List.zipWith7 ff a b c d e f g
+#-}
 
 
 {-# inline [2] unzip #-}

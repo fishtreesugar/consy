@@ -28,9 +28,7 @@ import Consy
 {- zip -}
 consZip, listZip :: [a] -> [b] -> [(a,b)]
 consZip = zip
-listZip [] _ = []
-listZip _ [] = []
-listZip (a:as) (b:bs) = (a,b) : listZip as bs
+listZip = Data.List.zip
 
 consZipText, textZip :: Text -> Text -> [(Char, Char)]
 consZipText = zip
@@ -60,8 +58,7 @@ seqZip = Data.Sequence.zip
 {- zip3 -}
 consZip3, listZip3 :: [a] -> [b] -> [c] -> [(a,b,c)]
 consZip3 = zip3
-listZip3 (a:as) (b:bs) (c:cs) = (a,b,c) : listZip3 as bs cs
-listZip3 _ _ _ = []
+listZip3 = Data.List.zip3
 
 consZip3Vector, vectorZip3 :: Vector a -> Vector b -> Vector c -> Vector (a,b,c)
 consZip3Vector = zip3
@@ -75,8 +72,7 @@ seqZip3 = Data.Sequence.zip3
 {- zip4 -}
 consZip4, listZip4 :: [a] -> [b] -> [c] -> [d] -> [(a,b,c,d)]
 consZip4 = zip4
-listZip4 (a:as) (b:bs) (c:cs) (d:ds) = (a,b,c,d) : listZip4 as bs cs ds
-listZip4 _ _ _ _ = []
+listZip4 = Data.List.zip4
 
 consZip4Vector, vectorZip4 :: Vector a -> Vector b -> Vector c -> Vector d -> Vector (a,b,c,d)
 consZip4Vector = zip4
@@ -90,8 +86,7 @@ seqZip4 = Data.Sequence.zip4
 {- zip5 -}
 consZip5, listZip5 :: [a] -> [b] -> [c] -> [d] -> [e] -> [(a,b,c,d,e)]
 consZip5 = zip5
-listZip5 (a:as) (b:bs) (c:cs) (d:ds) (e:es) = (a,b,c,d,e) : listZip5 as bs cs ds es
-listZip5 _ _ _ _ _ = []
+listZip5 = Data.List.zip5
 
 consZip5Vector, vectorZip5 :: Vector a -> Vector b -> Vector c -> Vector d -> Vector e -> Vector (a,b,c,d,e)
 consZip5Vector = zip5
@@ -101,8 +96,7 @@ vectorZip5 = Data.Vector.zip5
 {- zip6 -}
 consZip6, listZip6 :: [a] -> [b] -> [c] -> [d] -> [e] -> [f] -> [(a,b,c,d,e,f)]
 consZip6 = zip6
-listZip6 (a:as) (b:bs) (c:cs) (d:ds) (e:es) (f:fs ) = (a,b,c,d,e,f) : listZip6 as bs cs ds es fs
-listZip6 _ _ _ _ _ _ = []
+listZip6 = Data.List.zip6
 
 consZip6Vector, vectorZip6 :: Vector a -> Vector b -> Vector c -> Vector d -> Vector e -> Vector f -> Vector (a,b,c,d,e,f)
 consZip6Vector = zip6
@@ -112,18 +106,13 @@ vectorZip6 = Data.Vector.zip6
 {- zip7 -}
 consZip7, listZip7 :: [a] -> [b] -> [c] -> [d] -> [e] -> [f] -> [g] -> [(a,b,c,d,e,f,g)]
 consZip7 = zip7
-listZip7 (a:as) (b:bs) (c:cs) (d:ds) (e:es) (f:fs) (g:gs) = (a,b,c,d,e,f,g) : listZip7 as bs cs ds es fs gs
-listZip7 _ _ _ _ _ _ _ = []
+listZip7 = Data.List.zip7
 
 
 {- zipWith -}
 consZipWith, listZipWith :: (a -> b -> c) -> [a] -> [b] -> [c]
 consZipWith f = zipWith f
-listZipWith f = go
-  where
-    go [] _ = []
-    go _ [] = []
-    go (a:as) (b:bs) = f a b : go as bs
+listZipWith = Data.List.zipWith
 
 consZipWithText, textZipWith :: (Char -> Char -> Char) -> Text -> Text -> Text
 consZipWithText = zipWith
@@ -153,10 +142,7 @@ seqZipWith = Data.Sequence.zipWith
 {- zipWith3 -}
 consZipWith3, listZipWith3 :: (a -> b -> c -> d) -> [a] -> [b] -> [c] -> [d]
 consZipWith3 f = zipWith3 f
-listZipWith3 f = go
-  where
-    go (a:as) (b:bs) (c:cs) = f a b c : go as bs cs
-    go _ _ _ = []
+listZipWith3 = Data.List.zipWith3
 
 consZipWith3Vector, vectorZipWith3 :: (a -> b -> c -> d) -> Vector a -> Vector b -> Vector c -> Vector d
 consZipWith3Vector = zipWith3
@@ -170,10 +156,7 @@ seqZipWith3 = Data.Sequence.zipWith3
 {- zipWith4 -}
 consZipWith4, listZipWith4 :: (a -> b -> c -> d -> e) -> [a] -> [b] -> [c] -> [d] -> [e]
 consZipWith4 f = zipWith4 f
-listZipWith4 f = go
-  where
-    go (a:as) (b:bs) (c:cs) (d:ds) = f a b c d : go as bs cs ds
-    go _ _ _ _ = []
+listZipWith4 = Data.List.zipWith4
 
 consZipWith4Vector, vectorZipWith4 :: (a -> b -> c -> d -> e) -> Vector a -> Vector b -> Vector c -> Vector d -> Vector e
 consZipWith4Vector = zipWith4
@@ -187,10 +170,7 @@ seqZipWith4 = Data.Sequence.zipWith4
 {- zipWith5 -}
 consZipWith5, listZipWith5 :: (a -> b -> c -> d -> e -> f) -> [a] -> [b] -> [c] -> [d] -> [e] -> [f]
 consZipWith5 f = zipWith5 f
-listZipWith5 f = go
-  where
-    go (a:as) (b:bs) (c:cs) (d:ds) (e:es) = f a b c d e : go as bs cs ds es
-    go _ _ _ _ _ = []
+listZipWith5 = Data.List.zipWith5
 
 consZipWith5Vector, vectorZipWith5 :: (a -> b -> c -> d -> e -> f) -> Vector a -> Vector b -> Vector c -> Vector d -> Vector e -> Vector f
 consZipWith5Vector = zipWith5
@@ -200,10 +180,7 @@ vectorZipWith5 = Data.Vector.zipWith5
 {- zipWith6 -}
 consZipWith6, listZipWith6 :: (a -> b -> c -> d -> e -> f -> g) -> [a] -> [b] -> [c] -> [d] -> [e] -> [f] -> [g]
 consZipWith6 ff = zipWith6 ff
-listZipWith6 ff = go
-  where
-    go (a:as) (b:bs) (c:cs) (d:ds) (e:es) (f:fs)= ff a b c d e f : go as bs cs ds es fs
-    go _ _ _ _ _ _ = []
+listZipWith6 = Data.List.zipWith6
 
 consZipWith6Vector, vectorZipWith6 :: (a -> b -> c -> d -> e -> f -> g) -> Vector a -> Vector b -> Vector c -> Vector d -> Vector e -> Vector f -> Vector g
 consZipWith6Vector = zipWith6
@@ -213,10 +190,7 @@ vectorZipWith6 = Data.Vector.zipWith6
 {- zipWith7 -}
 consZipWith7, listZipWith7 :: (a -> b -> c -> d -> e -> f -> g -> h) -> [a] -> [b] -> [c] -> [d] -> [e] -> [f] -> [g] -> [h]
 consZipWith7 f = zipWith7 f
-listZipWith7 z = go
-  where
-    go (a:as) (b:bs) (c:cs) (d:ds) (e:es) (f:fs) (g:gs) = z a b c d e f g : go as bs cs ds es fs gs
-    go _ _ _ _ _ _ _ = []
+listZipWith7 = Data.List.zipWith7
 
 
 {- unzip -}

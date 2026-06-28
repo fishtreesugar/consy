@@ -23,6 +23,7 @@ import GHC.Enum (succ)
 import GHC.List (errorEmptyList)
 import GHC.Num (Num, Integer, (+), (-))
 import GHC.Real (fromIntegral)
+import GHC.Stack (withFrozenCallStack)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.Inspection
 
@@ -82,11 +83,11 @@ seqFoldl' = Data.Foldable.foldl'
 {- foldl1 -}
 consFoldl1Text, textFoldl1 :: (Char -> Char -> Char) -> Text -> Char
 consFoldl1Text = foldl1
-textFoldl1 = Data.Text.foldl1
+textFoldl1 = withFrozenCallStack Data.Text.foldl1
 
 consFoldl1Text4, textFoldl14 :: Char
 consFoldl1Text4 = foldl1 (\a _ -> '*')  (pack "aaaa")
-textFoldl14 = Data.Text.foldl1 (\a _ -> '*')  (pack "aaaa")
+textFoldl14 = withFrozenCallStack Data.Text.foldl1 (\a _ -> '*')  (pack "aaaa")
 
 consFoldl1Seq, seqFoldl1 :: (a -> a -> a) -> Seq a -> a
 consFoldl1Seq = foldl1
@@ -96,21 +97,21 @@ seqFoldl1 = Data.Foldable.foldl1
 {- foldl1' -}
 consFoldl1'Text, textFoldl1' :: (Char -> Char -> Char) -> Text -> Char
 consFoldl1'Text = foldl1'
-textFoldl1' = Data.Text.foldl1'
+textFoldl1' = withFrozenCallStack Data.Text.foldl1'
 
 consFoldl1'Text4, textFoldl1'4 :: Char
 consFoldl1'Text4 = foldl1' (\a _ -> '*')  (pack "aaaa")
-textFoldl1'4 = Data.Text.foldl1' (\a _ -> '*')  (pack "aaaa")
+textFoldl1'4 = withFrozenCallStack Data.Text.foldl1' (\a _ -> '*')  (pack "aaaa")
 
 
 {- foldr1 -}
 consFoldr1Text, textFoldr1 :: (Char -> Char -> Char) -> Text -> Char
 consFoldr1Text = foldr1
-textFoldr1 = Data.Text.foldr1
+textFoldr1 = withFrozenCallStack Data.Text.foldr1
 
 consFoldr1Text4, textFoldr14 :: Char
 consFoldr1Text4 = foldr1 (\a _ -> '*')  (pack "aaaa")
-textFoldr14 = Data.Text.foldr1 (\a _ -> '*')  (pack "aaaa")
+textFoldr14 = withFrozenCallStack Data.Text.foldr1 (\a _ -> '*')  (pack "aaaa")
 
 consFoldr1Seq, seqFoldr1 :: (a -> a -> a) -> Seq a -> a
 consFoldr1Seq = foldr1

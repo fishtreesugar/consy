@@ -30,10 +30,12 @@ import Data.Vector (Vector)
 import Data.Word (Word8)
 import GHC.List (errorEmptyList)
 import GHC.Num (Num, (+), (*))
+import GHC.Stack (withFrozenCallStack)
 
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.ByteString as BS
 import qualified Data.Foldable
+import qualified Data.List
 import qualified Data.Sequence
 import qualified Data.Text
 import qualified Data.Text.Lazy
@@ -81,6 +83,12 @@ concat = foldr (append) Empty
 "cons concat bslazy eta" [~1]
     forall xs.
     concat @[LBS.ByteString] xs = LBS.concat xs
+
+"cons concat list" [~1]
+    concat @[[_]] = Data.List.concat
+"cons concat list eta" [~1]
+    forall xs.
+    concat @[[_]] xs = Data.List.concat xs
  #-}
 
 
@@ -123,6 +131,12 @@ concatMap f = \as -> foldr (append . f) Empty as
 "cons concatMap bslazy eta" [~1]
     forall f xs.
     concatMap @LBS.ByteString f xs = LBS.concatMap f xs
+
+"cons concatMap list" [~1]
+    concatMap @[_] @[_] = Data.List.concatMap
+"cons concatMap list eta" [~1]
+    forall f xs.
+    concatMap @[_] @[_] f xs = Data.List.concatMap f xs
 #-}
 
 
@@ -209,6 +223,12 @@ any p = go
 "cons any bslazy eta"
     forall p xs.
     any @LBS.ByteString p xs = LBS.any p xs
+
+"cons any list"
+    any @[_] = Data.List.any
+"cons any list eta"
+    forall p xs.
+    any @[_] p xs = Data.List.any p xs
 #-}
 
 
@@ -305,21 +325,21 @@ product = \xs -> foldl (*) 1 xs
 maximum :: (Cons s s a a, Ord a) => s -> a
 maximum = \a ->
   case uncons a of
-    Nothing -> errorEmptyList "maximum"
+    Nothing -> withFrozenCallStack errorEmptyList "maximum"
     Just _ -> foldl1 max a
 
 {-# rules
 "cons maximum text" [~2]
-    maximum @Text = Data.Text.maximum
+    maximum @Text = withFrozenCallStack Data.Text.maximum
 "cons maximum text eta" [~2]
     forall xs.
-    maximum @Text xs = Data.Text.maximum xs
+    maximum @Text xs = withFrozenCallStack Data.Text.maximum xs
 
 "cons maximum ltext" [~2]
-    maximum @Data.Text.Lazy.Text = Data.Text.Lazy.maximum
+    maximum @Data.Text.Lazy.Text = withFrozenCallStack Data.Text.Lazy.maximum
 "cons maximum ltext eta" [~2]
     forall xs.
-    maximum @Data.Text.Lazy.Text xs = Data.Text.Lazy.maximum xs
+    maximum @Data.Text.Lazy.Text xs = withFrozenCallStack Data.Text.Lazy.maximum xs
 
 "cons maximum vector" [~2]
   maximum @(Vector _) = Data.Vector.maximum
@@ -328,22 +348,28 @@ maximum = \a ->
   maximum @(Vector _) xs = Data.Vector.maximum xs
 
 "cons maximum bs" [~2]
-    maximum @BS.ByteString = BS.maximum
+    maximum @BS.ByteString = withFrozenCallStack BS.maximum
 "cons maximum bs eta" [~2]
     forall xs.
-    maximum @BS.ByteString xs = BS.maximum xs
+    maximum @BS.ByteString xs = withFrozenCallStack BS.maximum xs
 
 "cons maximum bslazy" [~2]
-    maximum @LBS.ByteString = LBS.maximum
+    maximum @LBS.ByteString = withFrozenCallStack LBS.maximum
 "cons maximum bslazy eta" [~2]
     forall xs.
-    maximum @LBS.ByteString xs = LBS.maximum xs
+    maximum @LBS.ByteString xs = withFrozenCallStack LBS.maximum xs
 
 "cons maximum seq" [~2]
     maximum @(Seq _) = Data.Foldable.maximum
 "cons maximum seq eta" [~2]
     forall xs.
     maximum @(Seq _) xs = Data.Foldable.maximum xs
+
+"cons maximum list" [~2]
+    maximum @[_] = withFrozenCallStack Data.List.maximum
+"cons maximum list eta" [~2]
+    forall xs.
+    maximum @[_] xs = withFrozenCallStack Data.List.maximum xs
 #-}
 
 
@@ -352,21 +378,21 @@ maximum = \a ->
 minimum :: (Cons s s a a, Ord a) => s -> a
 minimum = \a ->
   case uncons a of
-    Nothing -> errorEmptyList "minimum"
+    Nothing -> withFrozenCallStack errorEmptyList "minimum"
     Just _ -> foldl1 min a
 
 {-# rules
 "cons minimum text" [~2]
-    minimum @Text = Data.Text.minimum
+    minimum @Text = withFrozenCallStack Data.Text.minimum
 "cons minimum text eta" [~2]
     forall xs.
-    minimum @Text xs = Data.Text.minimum xs
+    minimum @Text xs = withFrozenCallStack Data.Text.minimum xs
 
 "cons minimum ltext" [~2]
-    minimum @Data.Text.Lazy.Text = Data.Text.Lazy.minimum
+    minimum @Data.Text.Lazy.Text = withFrozenCallStack Data.Text.Lazy.minimum
 "cons minimum ltext eta" [~2]
     forall xs.
-    minimum @Data.Text.Lazy.Text xs = Data.Text.Lazy.minimum xs
+    minimum @Data.Text.Lazy.Text xs = withFrozenCallStack Data.Text.Lazy.minimum xs
 
 "cons minimum vector" [~2]
     minimum @(Vector _) = Data.Vector.minimum
@@ -375,20 +401,26 @@ minimum = \a ->
     minimum @(Vector _) xs = Data.Vector.minimum xs
 
 "cons minimum bs" [~2]
-    minimum @BS.ByteString = BS.minimum
+    minimum @BS.ByteString = withFrozenCallStack BS.minimum
 "cons minimum bs eta" [~2]
     forall xs.
-    minimum @BS.ByteString xs = BS.minimum xs
+    minimum @BS.ByteString xs = withFrozenCallStack BS.minimum xs
 
 "cons minimum bslazy" [~2]
-    minimum @LBS.ByteString = LBS.minimum
+    minimum @LBS.ByteString = withFrozenCallStack LBS.minimum
 "cons minimum bslazy eta" [~2]
     forall xs.
-    minimum @LBS.ByteString xs = LBS.minimum xs
+    minimum @LBS.ByteString xs = withFrozenCallStack LBS.minimum xs
 
 "cons minimum seq" [~2]
     minimum @(Seq _) = Data.Foldable.minimum
 "cons minimum seq eta" [~2]
     forall xs.
     minimum @(Seq _) xs = Data.Foldable.minimum xs
+
+"cons minimum list" [~2]
+    minimum @[_] = withFrozenCallStack Data.List.minimum
+"cons minimum list eta" [~2]
+    forall xs.
+    minimum @[_] xs = withFrozenCallStack Data.List.minimum xs
 #-}

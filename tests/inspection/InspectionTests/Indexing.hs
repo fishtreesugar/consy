@@ -56,7 +56,7 @@ listIndex ls !n
 {- elemIndex -}
 consElemIndex, listElemIndex :: Eq a => a -> [a] -> Maybe Int
 consElemIndex = elemIndex
-listElemIndex = \x -> Data.List.foldr (const . Just) Nothing . Data.List.findIndices (x==)
+listElemIndex = Data.List.elemIndex
 {-
 This test fails on GHC 8.2.2 or older versions due to listToMaybe defined as
   using foldr so that it can fuse via the foldr/build rule.
@@ -83,7 +83,7 @@ lbsElemIndex x xs = Data.ByteString.Lazy.elemIndex x xs
 {- elemIndices -}
 consElemIndices, listElemIndices :: Eq a => a -> [a] -> [Int]
 consElemIndices x ls = elemIndices x ls
-listElemIndices x ls = Data.List.findIndices (x==) ls
+listElemIndices = Data.List.elemIndices
 
 consElemIndicesBS, bsElemIndices :: Word8 -> Data.ByteString.ByteString -> [Int]
 consElemIndicesBS = elemIndices
@@ -97,7 +97,7 @@ lbsElemIndices = Data.ByteString.Lazy.elemIndices
 {- findIndex -}
 consFindIndex, listFindIndex :: (a -> Bool) -> [a] -> Maybe Int
 consFindIndex = findIndex
-listFindIndex p = Data.List.foldr (const . Just) Nothing . Data.List.findIndices p
+listFindIndex = Data.List.findIndex
 {-
 This test fails on GHC 8.2.2 or older versions due to listToMaybe defined as
   using foldr so that it can fuse via the foldr/build rule.
@@ -159,5 +159,5 @@ indexingInspectionTests =
     , $(inspectTest ('consFindIndexLBS === 'lbsFindIndex))
     , $(inspectTest ('consFindIndices === 'listFindIndices))
     , $(inspectTest ('consFindIndicesBS === 'bsFindIndices))
-    , $(inspectTest ('consFindIndicesLBS === 'lbsFindIndices))
+    , $(inspectTest (coreOf 'consFindIndicesLBS))
     ]

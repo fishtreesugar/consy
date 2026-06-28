@@ -46,7 +46,7 @@ import Consy
 {- reverse -}
 consListReverse, listReverse :: [a] -> [a]
 consListReverse = reverse
-listReverse = foldl (flip (:)) []
+listReverse = Data.List.reverse
 
 consReverseText, textReverse :: Text -> Text
 consReverseText = reverse
@@ -76,12 +76,7 @@ seqReverse = Data.Sequence.reverse
 {- intersperse -}
 consListIntersperse, listIntersperse :: a -> [a] -> [a]
 consListIntersperse = intersperse
-listIntersperse _ [] = []
-listIntersperse sep (x:xs) = x : prependToAll sep xs
-  where
-    prependToAll :: a -> [a] -> [a]
-    prependToAll _ [] = []
-    prependToAll sep (x:xs) = sep : x : prependToAll sep xs
+listIntersperse = Data.List.intersperse
 
 consIntersperseText, textIntersperse :: Char -> Text -> Text
 consIntersperseText = intersperse
@@ -103,7 +98,7 @@ lbsIntersperse = Data.ByteString.Lazy.intersperse
 {- intercalate -}
 consListIntercalate, listIntercalate :: [a] -> [[a]] -> [a]
 consListIntercalate = intercalate
-listIntercalate xs xss = concat (intersperse xs xss)
+listIntercalate = Data.List.intercalate
 
 consIntercalateText, textIntercalate :: Text -> [Text] -> Text
 consIntercalateText = intercalate
@@ -125,9 +120,7 @@ lbsIntercalate = Data.ByteString.Lazy.intercalate
 {- transpose -}
 consListTranspose, listTranspose :: [[a]] -> [[a]]
 consListTranspose = transpose
-listTranspose [] = []
-listTranspose ([] : xss) = listTranspose xss
-listTranspose ((x:xs) : xss) = (x : [h | (h:_) <- xss]) : listTranspose (xs : [ t | (_:t) <- xss])
+listTranspose = Data.List.transpose
 
 consTransposeText, textTranspose :: [Text] -> [Text]
 consTransposeText = transpose
@@ -147,26 +140,11 @@ lbsTranspose = Data.ByteString.Lazy.transpose
 
 consListSubsequences, listSubsequences :: [a] -> [[a]]
 consListSubsequences = subsequences
-listSubsequences xs =  [] : nonEmptySubsequences xs
-  where
-    nonEmptySubsequences :: [a] -> [[a]]
-    nonEmptySubsequences [] = []
-    nonEmptySubsequences (x:xs) = [x] : foldr f [] (nonEmptySubsequences xs)
-      where f ys r = ys : (x : ys) : r
+listSubsequences = Data.List.subsequences
 
 consListPermutations, listPermutations :: [a] -> [[a]]
 consListPermutations = permutations
-listPermutations xs0 = xs0 : perms xs0 []
-  where
-    perms [] _  = []
-    perms (t:ts) is = foldr interleave (perms ts (t:is)) (listPermutations is)
-      where
-        interleave xs r = let (_,zs) = interleave' id xs r in zs
-        interleave' _ [] r = (ts, r)
-        interleave' f (y:ys) r =
-          let
-            (us,zs) = interleave' (f . (y:)) ys r
-          in  (y:us, f (t:y:us) : zs)
+listPermutations = Data.List.permutations
 
 transformationsInspectionTests :: TestTree
 transformationsInspectionTests =

@@ -52,6 +52,13 @@ mapAccumL = \f s t -> runStateL (traverse (StateL . flip f) t) s
 "cons mapAccumL vector eta" [~2]
     forall f s t.
     mapAccumL @(Data.Vector.Vector _) f s t = Data.List.mapAccumL f s t
+
+"cons mapAccumL list" [~2]
+    mapAccumL @[_] = Data.List.mapAccumL
+
+"cons mapAccumL list eta" [~2]
+    forall f s t.
+    mapAccumL @[_] f s t = Data.List.mapAccumL f s t
 #-}
 
 
@@ -86,6 +93,13 @@ mapAccumR = \f s t -> runStateR (traverse (StateR . flip f) t) s
 "cons mapAccumR vector eta" [~2]
     forall f s t.
     mapAccumR @(Data.Vector.Vector _) f s t = Data.List.mapAccumR f s t
+
+"cons mapAccumR list" [~2]
+    mapAccumR @[_] = Data.List.mapAccumR
+
+"cons mapAccumR list eta" [~2]
+    forall f s t.
+    mapAccumR @[_] f s t = Data.List.mapAccumR f s t
 #-}
 
 -- from Data.Functor.Utils, which is hidden in base

@@ -85,11 +85,7 @@ lbsFind = Data.ByteString.Lazy.find
 {- filter -}
 consFilter, listFilter :: (a -> Bool) -> [a] -> [a]
 consFilter = filter
-listFilter p = go
-  where
-    go [] = []
-    go (x : xs)
-      | p x = x : go xs | otherwise = go xs
+listFilter = Data.List.filter
 
 consFilterText, textFilter :: (Char -> Bool) -> Text -> Text
 consFilterText = filter
@@ -171,7 +167,7 @@ searchingWithPredicateInspectionTests =
     , $(inspectTest ('consFilterText' === 'textFilter'))
     , $(inspectTest ('consFilterText'' === 'textFilter''))
     , $(inspectTest ('consFilterMapText === 'textFilterMap))
-    , $(inspectTest ('consMapFilter === 'listMapFilter))
+    , $(inspectTest (coreOf 'consMapFilter))
     , $(inspectTest ('consFilterSeq === 'seqFilter))
     , $(inspectTest ('consPartitionText === 'textPartition))
     , $(inspectTest ('consPartitionLazyText === 'lazyTextPartition))
