@@ -1,10 +1,12 @@
 {-# language BangPatterns #-}
+{-# language CPP #-}
 {-# language NoImplicitPrelude #-}
 {-# language TypeApplications #-}
 {-# language MagicHash #-}
 module Consy.Indexing
   ( module Control.Lens.Cons
   , module Control.Lens.Empty
+  , (!?)
   , (!!)
   , elemIndex
   , elemIndices
@@ -40,6 +42,59 @@ import qualified Data.Vector
 
 import Consy.Folds (build, foldr)
 import Consy.TransformationsMap (map)
+
+
+{-# inline [2] (!?) #-}
+-- (!?) :: [a] -> Int -> Maybe a
+(!?) :: Cons s s a a => s -> Int -> Maybe a
+(!?) s !n
+  | n < 0 = Nothing
+  | otherwise =
+      foldr
+        (\x r k ->
+            case k of
+              0 -> Just x
+              _ -> r (k - 1))
+        (const Nothing)
+        s
+        n
+infixl 9 !?
+
+{-# rules
+"cons !? vector" [~2]
+    (!?) @(Vector _) = (Data.Vector.!?)
+"cons !? vector eta" [~2]
+    forall xs n.
+    (!?) @(Vector _) xs n = (Data.Vector.!?) xs n
+
+"cons !? bs" [~2]
+    (!?) @BS.ByteString = BS.indexMaybe
+"cons !? bs eta" [~2]
+    forall xs n.
+    (!?) @BS.ByteString xs n = BS.indexMaybe xs n
+
+"cons !? lbs" [~2]
+    (!?) @LBS.ByteString = \xs n -> LBS.indexMaybe xs (fromIntegral n)
+"cons !? lbs eta" [~2]
+    forall xs n.
+    (!?) @LBS.ByteString xs n = LBS.indexMaybe xs (fromIntegral n)
+
+"cons !? seq" [~2]
+    (!?) @(Data.Sequence.Seq _) = \xs n -> Data.Sequence.lookup n xs
+"cons !? seq eta" [~2]
+    forall xs n.
+    (!?) @(Data.Sequence.Seq _) xs n = Data.Sequence.lookup n xs
+#-}
+
+#if MIN_VERSION_base(4,19,0)
+{-# rules
+"cons !? list" [~2]
+    (!?) @[_] = (Data.List.!?)
+"cons !? list eta" [~2]
+    forall xs n.
+    (!?) @[_] xs n = (Data.List.!?) xs n
+#-}
+#endif
 
 
 {-# inline [~1]  (!!) #-}

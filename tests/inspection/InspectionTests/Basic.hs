@@ -1,4 +1,5 @@
 {-# language BangPatterns #-}
+{-# language CPP #-}
 {-# language NoImplicitPrelude #-}
 {-# language TemplateHaskell #-}
 {-# options_ghc -O -fplugin Test.Tasty.Inspection.Plugin #-}
@@ -13,7 +14,7 @@ import Data.Eq (Eq(..), (==))
 import Data.Function (($), (.))
 import Data.Int (Int, Int64)
 import Data.Maybe (Maybe(..))
-import Data.Ord ((<), (>))
+import Data.Ord (Ordering, compare, (<), (>))
 import Data.Sequence (Seq, (><))
 import Data.Text (Text, pack)
 import Data.Vector (Vector, (++))
@@ -72,6 +73,36 @@ lbsAppend = Data.ByteString.Lazy.append
 consAppendSeq, seqAppend :: Data.Sequence.Seq a -> Data.Sequence.Seq a -> Data.Sequence.Seq a
 consAppendSeq = append
 seqAppend = (><)
+
+
+{- singleton -}
+consSingletonList, listSingleton :: a -> [a]
+consSingletonList = singleton
+listSingleton = Data.List.singleton
+
+consSingletonText, textSingleton :: Char -> Text
+consSingletonText = singleton
+textSingleton = Data.Text.singleton
+
+consSingletonLazyText, lazyTextSingleton :: Char -> Data.Text.Lazy.Text
+consSingletonLazyText = singleton
+lazyTextSingleton = Data.Text.Lazy.singleton
+
+consSingletonVector, vectorSingleton :: a -> Vector a
+consSingletonVector = singleton
+vectorSingleton = Data.Vector.singleton
+
+consSingletonBS, bsSingleton :: Word8 -> Data.ByteString.ByteString
+consSingletonBS = singleton
+bsSingleton = Data.ByteString.singleton
+
+consSingletonLBS, lbsSingleton :: Word8 -> Data.ByteString.Lazy.ByteString
+consSingletonLBS = singleton
+lbsSingleton = Data.ByteString.Lazy.singleton
+
+consSingletonSeq, seqSingleton :: a -> Seq a
+consSingletonSeq = singleton
+seqSingleton = Data.Sequence.singleton
 
 
 {- head -}
@@ -262,6 +293,38 @@ consLengthSeq, seqLength :: Data.Sequence.Seq a -> Int
 consLengthSeq = length
 seqLength = Data.Sequence.length
 
+
+{- compareLength -}
+#if MIN_VERSION_base(4,21,0)
+consCompareLengthList, listCompareLength :: [a] -> Int -> Ordering
+consCompareLengthList = compareLength
+listCompareLength = Data.List.compareLength
+
+#endif
+consCompareLengthText, textCompareLength :: Text -> Int -> Ordering
+consCompareLengthText = compareLength
+textCompareLength = Data.Text.compareLength
+
+consCompareLengthLazyText, lazyTextCompareLength :: Data.Text.Lazy.Text -> Int -> Ordering
+consCompareLengthLazyText = compareLength
+lazyTextCompareLength xs n = Data.Text.Lazy.compareLength xs (fromIntegral n)
+
+consCompareLengthVector, vectorCompareLength :: Vector a -> Int -> Ordering
+consCompareLengthVector = compareLength
+vectorCompareLength xs n = compare (Data.Vector.length xs) n
+
+consCompareLengthBS, bsCompareLength :: Data.ByteString.ByteString -> Int -> Ordering
+consCompareLengthBS = compareLength
+bsCompareLength xs n = compare (Data.ByteString.length xs) n
+
+consCompareLengthLBS, lbsCompareLength :: Data.ByteString.Lazy.ByteString -> Int -> Ordering
+consCompareLengthLBS = compareLength
+lbsCompareLength xs n = compare (Data.ByteString.Lazy.length xs) (fromIntegral n)
+
+consCompareLengthSeq, seqCompareLength :: Seq a -> Int -> Ordering
+consCompareLengthSeq = compareLength
+seqCompareLength xs n = compare (Data.Sequence.length xs) n
+
 basicInspectionTests :: TestTree
 basicInspectionTests =
   testGroup "Basic"
@@ -272,6 +335,13 @@ basicInspectionTests =
     , $(inspectTest ('consAppendBS === 'bsAppend))
     , $(inspectTest ('consAppendLBS === 'lbsAppend))
     , $(inspectTest ('consAppendSeq === 'seqAppend))
+    , $(inspectTest ('consSingletonList === 'listSingleton))
+    , $(inspectTest ('consSingletonText === 'textSingleton))
+    , $(inspectTest ('consSingletonLazyText === 'lazyTextSingleton))
+    , $(inspectTest ('consSingletonVector === 'vectorSingleton))
+    , $(inspectTest ('consSingletonBS === 'bsSingleton))
+    , $(inspectTest ('consSingletonLBS === 'lbsSingleton))
+    , $(inspectTest ('consSingletonSeq === 'seqSingleton))
     , $(inspectTest ('consHeadText === 'textHead))
     , $(inspectTest ('consHeadLazyText === 'lazyTextHead))
     , $(inspectTest ('consHeadVector === 'vectorHead))
@@ -311,4 +381,13 @@ basicInspectionTests =
     , $(inspectTest ('consFoldrLengthLBS === 'lbsFoldrLength))
     , $(inspectTest ('consFoldrLengthSeq === 'seqFoldrLength))
     , $(inspectTest ('consLengthSeq === 'seqLength))
+#if MIN_VERSION_base(4,21,0)
+    , $(inspectTest ('consCompareLengthList === 'listCompareLength))
+#endif
+    , $(inspectTest ('consCompareLengthText === 'textCompareLength))
+    , $(inspectTest ('consCompareLengthLazyText === 'lazyTextCompareLength))
+    , $(inspectTest ('consCompareLengthVector === 'vectorCompareLength))
+    , $(inspectTest ('consCompareLengthBS === 'bsCompareLength))
+    , $(inspectTest ('consCompareLengthLBS === 'lbsCompareLength))
+    , $(inspectTest ('consCompareLengthSeq === 'seqCompareLength))
     ]

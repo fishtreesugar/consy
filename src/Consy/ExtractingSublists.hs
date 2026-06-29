@@ -145,8 +145,8 @@ drop = go
       | 0 < n =
           case uncons s of
             Nothing -> Empty
-            Just (x, xs) -> go (n-1) xs
-      | otherwise = Empty
+            Just (_, xs) -> go (n-1) xs
+      | otherwise = s
 
 {-# noinline [1] unsafeDrop #-}
 unsafeDrop :: (AsEmpty s, Cons s s a a) => Int -> s -> s

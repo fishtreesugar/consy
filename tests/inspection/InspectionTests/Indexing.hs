@@ -1,4 +1,5 @@
 {-# language BangPatterns #-}
+{-# language CPP #-}
 {-# language MagicHash #-}
 {-# language NoImplicitPrelude #-}
 {-# language TemplateHaskell #-}
@@ -52,6 +53,30 @@ listIndex ls !n
   where
     tooLarge :: Int -> a
     tooLarge _ = errorWithoutStackTrace "Prelude.!!: index too large"
+
+
+{- (!?) -}
+#if MIN_VERSION_base(4,19,0)
+consIndexMaybeList, listIndexMaybe :: [a] -> Int -> Maybe a
+consIndexMaybeList = (!?)
+listIndexMaybe = (Data.List.!?)
+
+#endif
+consIndexMaybeVector, vectorIndexMaybe :: Vector a -> Int -> Maybe a
+consIndexMaybeVector = (!?)
+vectorIndexMaybe = (Data.Vector.!?)
+
+consIndexMaybeBS, bsIndexMaybe :: Data.ByteString.ByteString -> Int -> Maybe Word8
+consIndexMaybeBS = (!?)
+bsIndexMaybe = Data.ByteString.indexMaybe
+
+consIndexMaybeLBS, lbsIndexMaybe :: Data.ByteString.Lazy.ByteString -> Int -> Maybe Word8
+consIndexMaybeLBS = (!?)
+lbsIndexMaybe xs n = Data.ByteString.Lazy.indexMaybe xs (fromIntegral n)
+
+consIndexMaybeSeq, seqIndexMaybe :: Data.Sequence.Seq a -> Int -> Maybe a
+consIndexMaybeSeq = (!?)
+seqIndexMaybe xs n = Data.Sequence.lookup n xs
 
 {- elemIndex -}
 consElemIndex, listElemIndex :: Eq a => a -> [a] -> Maybe Int
@@ -145,6 +170,13 @@ indexingInspectionTests :: TestTree
 indexingInspectionTests =
   testGroup "Indexing"
     [ $(inspectTest ('consListIndex === 'listIndex))
+#if MIN_VERSION_base(4,19,0)
+    , $(inspectTest ('consIndexMaybeList === 'listIndexMaybe))
+#endif
+    , $(inspectTest ('consIndexMaybeVector === 'vectorIndexMaybe))
+    , $(inspectTest ('consIndexMaybeBS === 'bsIndexMaybe))
+    , $(inspectTest ('consIndexMaybeLBS === 'lbsIndexMaybe))
+    , $(inspectTest ('consIndexMaybeSeq === 'seqIndexMaybe))
     , $(inspectTest ('consElemIndex === 'listElemIndex))
     , $(inspectTest ('consElemIndexVector === 'vectorElemIndex))
     , $(inspectTest ('consElemIndexBS === 'bsElemIndex))
